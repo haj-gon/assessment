@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACCT 311 Midterm 1</title>
+    <!-- SheetJS for real .xlsx generation -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --zag-blue: #002f6c; /* Gonzaga Blue */
+            --zag-red: #ce1126;  /* Gonzaga Red */
+            --slate: #4b5563;
+            --bg-body: #f3f4f6;
+            --surface: #ffffff;
+            --border: #e2e8f0;
+            --success: #166534;
+            --danger: #991b1b;
+            --radius: 8px;
+            --excel-header-bg: #f8f9fa;
+            --excel-border: #d1d5db;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-body);
+            color: #1f2937;
+            margin: 0;
+            padding-bottom: 80px;
+            line-height: 1.6;
+            user-select: none; /* Disable text selection globally */
+            -webkit-user-select: none;
+        }
+
+        /* --- UTILITY CLASSES --- */
+        .hidden { display: none !important; }
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+        .card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 25px;
+            border: 1px solid var(--border);
+        }
+        .btn {
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+            transition: all 0.2s;
+            display: inline-block;
+        }
+        .btn-primary { background-color: var(--zag-blue); color: white; width: 100%; }
+        .btn-primary:hover { background-color: #001f4d; }
+        .btn-red { background-color: var(--zag-red); color: white; }
+        .btn-red:hover { background-color: #a30d1e; }
+        
+        /* --- LANDING PAGE --- */
+        #landing-page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #002f6c 0%, #0f172a 100%);
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        .bulldog-img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 4px solid white;
+            margin-bottom: 20px;
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        .landing-card {
+            background: white;
+            color: #1f2937;
+            padding: 40px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        input[type="text"], input[type="email"], input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0 20px 0;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+        input:focus { outline: none; border-color: var(--zag-blue); }
+
+        /* --- MC SECTION STYLES --- */
+        .section-header {
+            border-left: 5px solid var(--zag-blue);
+            padding-left: 15px;
+            margin-bottom: 20px;
+            color: var(--zag-blue);
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .question-text { font-weight: 600; font-size: 1.1rem; margin-bottom: 15px; }
+        .code-snippet {
+            font-family: 'Consolas', monospace;
+            background: #eef2ff;
+            color: #dc2626;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            border: 1px solid #c7d2fe;
+        }
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .option-label:hover { background-color: #f8fafc; border-color: #cbd5e1; }
+        input[type="radio"] { margin-right: 12px; transform: scale(1.2); }
+        input[type="radio"]:checked + span { font-weight: bold; color: var(--zag-blue); }
+        .option-label:has(input:checked) { border-color: var(--zag-blue); background-color: #eff6ff; }
+
+        /* --- PRACTICAL SECTION STYLES --- */
+        .task-instruction {
+            background-color: #eff6ff;
+            border-left: 4px solid var(--zag-blue);
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+        .btn-download {
+            background-color: #f59e0b;
+            color: #fff;
+            margin-top: 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            width: auto;
+        }
+        .btn-download:hover { background-color: #d97706; }
+
+        .warning-box {
+            background-color: #e0f2fe; /* Lighter blue */
+            border: 2px solid #0ea5e9; /* Sky blue */
+            color: #0c4a6e; /* Dark blue text */
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        /* --- FLOATING DATA BUTTON & MODAL --- */
+        #floatingDataBtn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--zag-red);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            cursor: pointer;
+            z-index: 990;
+            border: none;
+            font-size: 28px;
+            transition: transform 0.2s;
+        }
+        #floatingDataBtn:hover { transform: scale(1.1); }
+        
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
+            backdrop-filter: blur(3px);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 85vh;
+            overflow-y: auto;
+            z-index: 2001;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* --- EXCEL GRID STYLING --- */
+        .excel-window {
+            background: white;
+            border: 1px solid #ccc;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+            border-radius: 4px;
+            overflow: hidden;
+            /* Sticky Header Logic */
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .excel-toolbar {
+            background: var(--zag-blue);
+            color: white;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .data-table-container {
+            overflow-x: auto;
+            max-height: 300px; /* Reduced height so it doesn't take up too much sticky space */
+            user-select: none; /* PREVENT COPYING */
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            position: relative;
+            background: white;
+        }
+        table.ref-table {
+            border-collapse: collapse;
+            font-family: 'Calibri', 'Segoe UI', sans-serif;
+            font-size: 0.9rem;
+            min-width: 100%;
+            cursor: default;
+        }
+        /* Excel Header Cells (A, B, C...) */
+        table.ref-table th {
+            background: var(--excel-header-bg);
+            border: 1px solid var(--excel-border);
+            color: #4b5563;
+            font-weight: 600;
+            text-align: center;
+            padding: 4px 8px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        /* Row Number Cells (1, 2, 3...) */
+        table.ref-table td.row-header {
+            background: var(--excel-header-bg);
+            border: 1px solid var(--excel-border);
+            color: #4b5563;
+            font-weight: 600;
+            text-align: center;
+            width: 40px;
+            position: sticky;
+            left: 0;
+            z-index: 5;
+        }
+        /* Data Cells */
+        table.ref-table td.data-cell {
+            border: 1px solid var(--excel-border);
+            padding: 4px 8px;
+            white-space: nowrap;
+        }
+        /* First Row of Data (Field Headers inside Grid) */
+        table.ref-table tr:first-child td.data-cell {
+            font-weight: bold;
+            text-align: center;
+        }
+        table.ref-table tr:hover td.data-cell {
+            background-color: #eef2ff;
+        }
+
+        /* --- RESULTS PAGE --- */
+        .results-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .results-table th, .results-table td { border: 1px solid var(--border); padding: 12px; text-align: left; }
+        .results-table th { background-color: #f1f5f9; }
+        .correct-cell { color: var(--success); font-weight: bold; }
+        .match { background-color: #dcfce7; }
+        .mismatch { background-color: #fee2e2; }
+    </style>
+</head>
+<body>
+
+<!-- 1. LANDING PAGE -->
+<div id="landing-page">
+    <!-- GENERATED BULLDOG SVG -->
+    <svg class="bulldog-img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+        <circle cx="100" cy="100" r="95" fill="white" stroke="#002f6c" stroke-width="5"/>
+        <path d="M40 50 Q20 20 60 40 Z" fill="#4b5563"/>
+        <path d="M160 50 Q180 20 140 40 Z" fill="#4b5563"/>
+        <path d="M50 50 Q100 20 150 50 Q170 100 150 150 Q100 180 50 150 Q30 100 50 50 Z" fill="#d1d5db"/>
+        <ellipse cx="75" cy="80" rx="15" ry="12" fill="white"/>
+        <circle cx="75" cy="80" r="5" fill="black"/>
+        <ellipse cx="125" cy="80" rx="15" ry="12" fill="white"/>
+        <circle cx="125" cy="80" r="5" fill="black"/>
+        <ellipse cx="100" cy="110" rx="25" ry="15" fill="#9ca3af"/>
+        <path d="M90 105 Q100 100 110 105 Q105 115 100 115 Q95 115 90 105" fill="#1f2937"/>
+        <path d="M75 120 Q100 150 125 120" fill="none" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/>
+        <path d="M85 130 L85 145" fill="none" stroke="#1f2937" stroke-width="2"/>
+        <path d="M115 130 L115 145" fill="none" stroke="#1f2937" stroke-width="2"/>
+        <path d="M60 155 Q100 175 140 155 L145 165 Q100 185 55 165 Z" fill="#ce1126"/>
+        <text x="100" y="190" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold" font-size="16" fill="#002f6c">ZAGS</text>
+    </svg>
+    
+    <div class="landing-card">
+        <h1 style="margin-top: 0; color: var(--zag-blue);">ACCT 311 Midterm 1</h1>
+        <p>Please enter your details to begin the examination.</p>
+        
+        <div style="background-color: #fff3cd; color: #856404; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #ffeeba; text-align: left;">
+            <strong>⚠️ IMPORTANT:</strong> 
+            <ul style="margin: 5px 0 0 20px; padding: 0;">
+                <li>Do NOT refresh this page or you will lose your progress.</li>
+                <li>You must <strong>submit your answers here</strong> AND <strong>upload your Excel file</strong> to Canvas.</li>
+            </ul>
+        </div>
+        
+        <div style="text-align: left;">
+            <label><strong>Full Name</strong></label>
+            <input type="text" id="landing_name" placeholder="e.g., John Doe">
+            
+            <label><strong>Zagmail Address</strong></label>
+            <input type="email" id="landing_email" placeholder="e.g., jdoe@zagmail.gonzaga.edu">
+        </div>
+
+        <button class="btn btn-primary" onclick="startExam()">Begin Test</button>
+        <p id="landing-error" style="color: var(--zag-red); display: none; margin-top: 10px;">Please fill out all fields.</p>
+    </div>
+</div>
+
+<!-- 2. MULTIPLE CHOICE SECTION -->
+<div id="mc-page" class="container hidden">
+    <!-- Floating Data Button (Backup) -->
+    <button id="floatingDataBtn" onclick="toggleModal()" title="View Dataset">📊</button>
+
+    <div class="section-header">Part 1: Concepts & Logic (5 Points - 1 Pt Each)</div>
+    
+    <div class="card" style="background: #eff6ff; border-left: 4px solid var(--zag-red);">
+        <strong>Instructions:</strong> 
+        <br>1. Use the dataset below to answer the questions.
+        <br>2. You <strong>cannot</strong> copy-paste the data. Use your logic.
+        <br>3. Each question is worth 1 point.
+        <br>4. You may return to Part 1 at any time before you submit the test.
+    </div>
+
+    <!-- INLINE DATASET (Sticky) -->
+    <div class="excel-window">
+        <div class="excel-toolbar">
+            <span>Inventory_2026.xlsx</span>
+        </div>
+        <div class="data-table-container">
+            <table class="ref-table">
+                <thead>
+                    <tr>
+                        <th style="width: 30px;"></th> <!-- Corner -->
+                        <th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th>
+                    </tr>
+                </thead>
+                <tbody id="inline-data-body">
+                    <!-- JS Injected Data -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Q1 XLOOKUP -->
+    <div class="card">
+        <div class="question-text">1. Look at the clothing dataset above (concept question). What would the formula <span class="code-snippet">=XLOOKUP(106, A:A, C:C)</span> return?</div>
+        <div class="options">
+            <label class="option-label"><input type="radio" name="mc1" value="A"> <span>A) Denim Jacket</span></label>
+            <label class="option-label"><input type="radio" name="mc1" value="B"> <span>B) Outerwear</span></label>
+            <label class="option-label"><input type="radio" name="mc1" value="C"> <span>C) 75.00</span></label>
+            <label class="option-label"><input type="radio" name="mc1" value="D"> <span>D) Winter</span></label>
+        </div>
+    </div>
+
+    <!-- Q2 XMATCH (Updated) -->
+    <div class="card">
+        <div class="question-text">2. Formula: <span class="code-snippet">=XMATCH("Stock", $B$1:$F$1)</span>. What is the result?</div>
+        <div class="options">
+            <label class="option-label"><input type="radio" name="mc2" value="A"> <span>A) 2</span></label>
+            <label class="option-label"><input type="radio" name="mc2" value="B"> <span>B) 3</span></label>
+            <label class="option-label"><input type="radio" name="mc2" value="C"> <span>C) 4</span></label>
+            <label class="option-label"><input type="radio" name="mc2" value="D"> <span>D) #N/A</span></label>
+        </div>
+    </div>
+
+    <!-- Q3 IFERROR (New) -->
+    <div class="card">
+        <div class="question-text">3. What would the formula return? <br><span class="code-snippet">=IFERROR(XLOOKUP(999, A:A, C:C), "Not Found")</span></div>
+        <div class="options">
+            <label class="option-label"><input type="radio" name="mc3" value="A"> <span>A) #N/A</span></label>
+            <label class="option-label"><input type="radio" name="mc3" value="B"> <span>B) 0</span></label>
+            <label class="option-label"><input type="radio" name="mc3" value="C"> <span>C) Not Found</span></label>
+            <label class="option-label"><input type="radio" name="mc3" value="D"> <span>D) #VALUE!</span></label>
+        </div>
+    </div>
+
+    <!-- Q4 INDEX/MATCH (Moved from Q5) -->
+    <div class="card">
+        <div class="question-text">4. Formula: <span class="code-snippet">=INDEX($B$2:$F$21, XMATCH(107, $A$2:$A$21), XMATCH("Price", $B$1:$F$1))</span> <br>What is the return value?</div>
+        <div class="options">
+            <label class="option-label"><input type="radio" name="mc4" value="A"> <span>A) 35.00</span></label>
+            <label class="option-label"><input type="radio" name="mc4" value="B"> <span>B) 75.00</span></label>
+            <label class="option-label"><input type="radio" name="mc4" value="C"> <span>C) Denim Jacket</span></label>
+            <label class="option-label"><input type="radio" name="mc4" value="D"> <span>D) #REF!</span></label>
+        </div>
+    </div>
+
+    <!-- Q5 Pivot Drill Down (New) -->
+    <div class="card">
+        <div class="question-text">5. Pivot Drill Down: What happens if you double-click a number (value) inside a Pivot Table?</div>
+        <div class="options">
+            <label class="option-label"><input type="radio" name="mc5" value="A"> <span>A) It opens the formatting menu.</span></label>
+            <label class="option-label"><input type="radio" name="mc5" value="B"> <span>B) It creates a new sheet listing the raw records for that value.</span></label>
+            <label class="option-label"><input type="radio" name="mc5" value="C"> <span>C) It deletes the value.</span></label>
+            <label class="option-label"><input type="radio" name="mc5" value="D"> <span>D) It refreshes the data.</span></label>
+        </div>
+    </div>
+
+    <button class="btn btn-primary" onclick="showPage('excel-page')">Continue to Lab Style Test</button>
+</div>
+
+<!-- 3. EXCEL PRACTICAL SECTION -->
+<div id="excel-page" class="container hidden">
+    <div class="section-header">Part 2: Excel Analysis (20 Points - 2 Pts Each)</div>
+    
+    <div class="card" style="background: #1e293b; color: white;">
+        <h2 style="margin-top:0">Data File</h2>
+        <p>Click below to download the dataset required for the practical portion. <br>Questions are worth <strong>2 points</strong> each.</p>
+        <button class="btn btn-download" onclick="generateAndDownloadExcel()">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            Download midterm1_acct311.xlsx
+        </button>
+    </div>
+
+    <form id="examForm" onsubmit="submitExam(event)">
+        <!-- Identity Hidden (Auto-filled) -->
+        <input type="hidden" id="student_name" name="student_name">
+        <input type="hidden" id="student_email" name="student_email">
+        
+        <!-- HIDDEN MC ANSWERS FOR SUBMISSION -->
+        <input type="hidden" id="hidden_mc1" name="mc1">
+        <input type="hidden" id="hidden_mc2" name="mc2">
+        <input type="hidden" id="hidden_mc3" name="mc3">
+        <input type="hidden" id="hidden_mc4" name="mc4">
+        <input type="hidden" id="hidden_mc5" name="mc5">
+
+        <div class="card">
+            <div class="section-header" style="font-size:1.2rem; margin-bottom:15px;">Lookup & Logic</div>
+            
+            <div class="task-instruction">
+                <strong>Task 1 (XLOOKUP):</strong> Create column <strong>Comm_Rate</strong> using XLOOKUP on <strong>Sales_Amount</strong> vs Commission_Tiers table (Table A in Reference Tables). Round your answer to 2 decimal places.
+            </div>
+            <label>Question 1: What is the Commission Rate for <strong>Transaction ID 1015</strong>?</label>
+            <input type="text" id="ans_q1" name="ans_q1" required placeholder="e.g., 0.06">
+
+            <div class="task-instruction" style="margin-top:20px;">
+                <strong>Task 2 (Simple IF):</strong> Create column <strong>Volume_Flag</strong>. If Units > 40 return "High", else "Low".
+            </div>
+            <label>Question 2: What is the Volume Flag for <strong>Transaction ID 1010</strong>?</label>
+            <input type="text" id="ans_q2" name="ans_q2" required placeholder="High or Low">
+
+            <div class="task-instruction" style="margin-top:20px;">
+                <strong>Task 3 (Nested IF):</strong> Create <strong>Bonus_Category</strong>.<br>
+                1. If Sales_Amount > 5000 AND Units_Sold > 50, then "Gold".<br>
+                2. If Sales_Amount > 2000, then "Silver".<br>
+                3. Else "Bronze".
+            </div>
+            <label>Question 3: What is the Bonus Category for <strong>Transaction ID 1022</strong>?</label>
+            <input type="text" id="ans_q3" name="ans_q3" required placeholder="e.g., Bronze">
+
+            <div class="task-instruction" style="margin-top:20px;">
+                <strong>Task 4 (Lookup Matrix):</strong> Calculate <strong>Shipping_Cost</strong> based on Region and Item. Refer to Reference Table B (Shipping Matrix).
+            </div>
+            <label>Question 4: What is the Shipping Cost for <strong>Transaction ID 1040</strong>?</label>
+            <input type="number" step="0.01" id="ans_q4" name="ans_q4" required placeholder="e.g., 12.50">
+        </div>
+
+        <div class="card">
+            <div class="section-header" style="font-size:1.2rem; margin-bottom:15px;">Conditional Analysis</div>
+            <p style="font-size:0.9rem; color:#666; margin-bottom:15px;"><em>Instruction: Use conditional logic formulas (e.g., SUMIFS, COUNTIFS, AVERAGEIFS) to answer these questions. Round decimals to 2 places.</em></p>
+            
+            <label>Question 5: Total Sales Amount for <strong>"West"</strong> region in <strong>2024</strong>?</label>
+            <input type="number" id="ans_q5" name="ans_q5" required>
+
+            <label style="margin-top:15px;">Question 6: Count of transactions in <strong>"East"</strong> with <strong>Units > 45</strong>?</label>
+            <input type="number" id="ans_q6" name="ans_q6" required>
+
+            <label style="margin-top:15px;">Question 7: Average <strong>Unit_Price</strong> for <strong>"Gizmo"</strong> in <strong>2023</strong>? (Whole number)</label>
+            <input type="number" id="ans_q7" name="ans_q7" required>
+        </div>
+
+        <div class="card">
+            <div class="section-header" style="font-size:1.2rem; margin-bottom:15px;">Pivot Tables</div>
+            <div class="task-instruction">
+                <strong>Instruction:</strong> Create separate pivot tables to answer each of the following questions.
+            </div>
+            
+            <label>Question 8: Pivot 1 - <strong>Average Sales_Amount</strong> for <strong>South</strong>? (2 decimals)</label>
+            <input type="number" step="0.01" id="ans_q8" name="ans_q8" required>
+
+            <label style="margin-top:15px;">Question 9: Pivot 2 - <strong>% Difference</strong> in Total Sales from <strong>2024 to 2025</strong>?</label>
+            <input type="text" id="ans_q9" name="ans_q9" required placeholder="e.g., 15.20%">
+
+            <label style="margin-top:15px;">Question 10: Pivot 3 - <strong>% of Grand Total</strong> for <strong>North</strong>?</label>
+            <input type="text" id="ans_q10" name="ans_q10" required placeholder="e.g., 24.50%">
+        </div>
+
+        <div style="display:flex; justify-content: space-between; align-items: center; margin-top:20px;">
+            <button type="button" class="btn" style="background:#64748b; color:white;" onclick="showPage('mc-page')">Back to Multiple Choice</button>
+            <button type="submit" id="submitBtn" class="btn btn-primary">Submit Exam & View Score</button>
+        </div>
+        <div id="submitMsg" style="margin-top:10px; text-align:center; font-weight:bold;"></div>
+    </form>
+    
+    <!-- INSTRUCTOR OVERRIDE REMOVED -->
+</div>
+
+<!-- 4. RESULTS PAGE -->
+<div id="results-page" class="container hidden">
+    <div class="card">
+        <h1 style="color: var(--zag-blue); text-align: center;">Submission Received</h1>
+        
+        <div class="warning-box" style="text-align:center; font-size:1.2rem; margin: 20px 0;">
+            <div style="margin-bottom: 5px;">⚠️ <strong>Don't forget!</strong></div>
+            Please upload your Excel file (with your work contained) to CANVAS.<br>
+            Without it, you will receive NO CREDIT.
+        </div>
+
+        <h3 style="text-align: center; color: #666;" id="finalScoreDisplay"></h3>
+        
+        <div id="student-summary" style="text-align: center; margin-bottom: 20px; color: #666;"></div>
+
+        <h3>Part 1: Multiple Choice Results</h3>
+        <table class="results-table">
+            <thead><tr><th>Q</th><th>Your Answer</th><th>Status</th></tr></thead>
+            <tbody id="mc-results-body"></tbody>
+        </table>
+
+        <h3 style="margin-top: 30px;">Part 2: Excel Practical Results</h3>
+        <table class="results-table">
+            <thead><tr><th>Q</th><th>Your Answer</th><th>Status</th></tr></thead>
+            <tbody id="excel-results-body"></tbody>
+        </table>
+
+        <div class="task-instruction" style="margin-top: 25px; background-color: #f0fdf4; border-color: #22c55e;">
+             <strong>Student Record:</strong> Please download your answers below. Keep this file as proof of your submission. <br>
+             (Correct answers will be revealed in the downloaded file)
+        </div>
+        
+        <button onclick="downloadStudentAnswers()" class="btn" style="background:#16a34a; color:white; width:100%; text-align:center;">
+            Download Your Answers (For your own record)
+        </button>
+        
+        <button class="btn btn-red" onclick="exitExam()" style="margin-top: 20px; width: 100%;">Exit Exam</button>
+    </div>
+</div>
+
+<!-- MODAL FOR MC DATA (BACKUP) -->
+<div class="modal-overlay" id="modalOverlay"></div>
+<div class="modal" id="dataModal">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+        <h3 style="margin:0; color:var(--zag-blue);">Dataset: Clothing_Ref.xlsx (Concepts Only)</h3>
+        <button onclick="toggleModal()" style="border:none; background:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+    </div>
+    <div class="data-table-container">
+        <table class="ref-table" id="modal-table-content">
+            <!-- Populated by JS -->
+        </table>
+    </div>
+</div>
+
+<!-- LOGIC SCRIPTS -->
+<script>
+    // --- STATE MANAGEMENT ---
+    const pages = ['landing-page', 'mc-page', 'excel-page', 'results-page'];
+    let studentInfo = { name: "", email: "" };
+    let mcScore = 0;
+    let excelScore = 0;
+    let mcAnswers = {};
+    // Google Script URL
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyw5xU9ohAK8E9slxTJRmnyNV8xjCnsTmMHZIMXrEMwp6zKMUokSHSV2kqahUDbSYCbXw/exec"; 
+
+    // --- DATASET: STATIC DATA (PROVIDED BY INSTRUCTOR) ---
+    // Transaction_ID	Year	Region	Rep	Item	Units_Sold	Unit_Price	Sales_Amount
+    const staticData = [
+        {Transaction_ID: 1001, Year: 2022, Region: "West", Rep: "Rep_E", Item: "Gizmo", Units_Sold: 23, Unit_Price: 108, Sales_Amount: 2484},
+        {Transaction_ID: 1002, Year: 2022, Region: "East", Rep: "Rep_B", Item: "Thingamajig", Units_Sold: 41, Unit_Price: 92, Sales_Amount: 3772},
+        {Transaction_ID: 1003, Year: 2022, Region: "North", Rep: "Rep_E", Item: "Gadget", Units_Sold: 30, Unit_Price: 84, Sales_Amount: 2520},
+        {Transaction_ID: 1004, Year: 2022, Region: "West", Rep: "Rep_D", Item: "Gadget", Units_Sold: 51, Unit_Price: 32, Sales_Amount: 1632},
+        {Transaction_ID: 1005, Year: 2022, Region: "East", Rep: "Rep_A", Item: "Thingamajig", Units_Sold: 32, Unit_Price: 96, Sales_Amount: 3072},
+        {Transaction_ID: 1006, Year: 2022, Region: "North", Rep: "Rep_C", Item: "Gizmo", Units_Sold: 46, Unit_Price: 56, Sales_Amount: 2576},
+        {Transaction_ID: 1007, Year: 2022, Region: "East", Rep: "Rep_D", Item: "Widget", Units_Sold: 27, Unit_Price: 105, Sales_Amount: 2835},
+        {Transaction_ID: 1008, Year: 2022, Region: "East", Rep: "Rep_E", Item: "Gadget", Units_Sold: 13, Unit_Price: 106, Sales_Amount: 1378},
+        {Transaction_ID: 1009, Year: 2022, Region: "North", Rep: "Rep_B", Item: "Widget", Units_Sold: 69, Unit_Price: 76, Sales_Amount: 5244},
+        {Transaction_ID: 1010, Year: 2022, Region: "East", Rep: "Rep_C", Item: "Gizmo", Units_Sold: 18, Unit_Price: 27, Sales_Amount: 486},
+        {Transaction_ID: 1011, Year: 2022, Region: "North", Rep: "Rep_E", Item: "Thingamajig", Units_Sold: 62, Unit_Price: 45, Sales_Amount: 2790},
+        {Transaction_ID: 1012, Year: 2022, Region: "West", Rep: "Rep_D", Item: "Gadget", Units_Sold: 69, Unit_Price: 96, Sales_Amount: 6624},
+        {Transaction_ID: 1013, Year: 2022, Region: "East", Rep: "Rep_E", Item: "Thingamajig", Units_Sold: 62, Unit_Price: 22, Sales_Amount: 1364},
+        {Transaction_ID: 1014, Year: 2022, Region: "West", Rep: "Rep_B", Item: "Gizmo", Units_Sold: 46, Unit_Price: 63, Sales_Amount: 2898},
+        {Transaction_ID: 1015, Year: 2022, Region: "West", Rep: "Rep_E", Item: "Gizmo", Units_Sold: 59, Unit_Price: 60, Sales_Amount: 3540},
+        {Transaction_ID: 1016, Year: 2022, Region: "West", Rep: "Rep_A", Item: "Thingamajig", Units_Sold: 66, Unit_Price: 73, Sales_Amount: 4818},
+        {Transaction_ID: 1017, Year: 2023, Region: "North", Rep: "Rep_D", Item: "Thingamajig", Units_Sold: 65, Unit_Price: 106, Sales_Amount: 6890},
+        {Transaction_ID: 1018, Year: 2023, Region: "West", Rep: "Rep_D", Item: "Gizmo", Units_Sold: 14, Unit_Price: 98, Sales_Amount: 1372},
+        {Transaction_ID: 1019, Year: 2023, Region: "East", Rep: "Rep_E", Item: "Gadget", Units_Sold: 42, Unit_Price: 32, Sales_Amount: 1344},
+        {Transaction_ID: 1020, Year: 2023, Region: "East", Rep: "Rep_B", Item: "Widget", Units_Sold: 25, Unit_Price: 106, Sales_Amount: 2650},
+        {Transaction_ID: 1021, Year: 2023, Region: "East", Rep: "Rep_C", Item: "Thingamajig", Units_Sold: 45, Unit_Price: 47, Sales_Amount: 2115},
+        {Transaction_ID: 1022, Year: 2023, Region: "East", Rep: "Rep_D", Item: "Thingamajig", Units_Sold: 64, Unit_Price: 90, Sales_Amount: 5760},
+        {Transaction_ID: 1023, Year: 2023, Region: "North", Rep: "Rep_B", Item: "Gizmo", Units_Sold: 51, Unit_Price: 37, Sales_Amount: 1887},
+        {Transaction_ID: 1024, Year: 2023, Region: "North", Rep: "Rep_A", Item: "Thingamajig", Units_Sold: 66, Unit_Price: 24, Sales_Amount: 1584},
+        {Transaction_ID: 1025, Year: 2023, Region: "East", Rep: "Rep_E", Item: "Widget", Units_Sold: 49, Unit_Price: 116, Sales_Amount: 5684},
+        {Transaction_ID: 1026, Year: 2023, Region: "North", Rep: "Rep_B", Item: "Widget", Units_Sold: 46, Unit_Price: 43, Sales_Amount: 1978},
+        {Transaction_ID: 1027, Year: 2023, Region: "South", Rep: "Rep_E", Item: "Gadget", Units_Sold: 45, Unit_Price: 35, Sales_Amount: 1575},
+        {Transaction_ID: 1028, Year: 2023, Region: "South", Rep: "Rep_E", Item: "Widget", Units_Sold: 51, Unit_Price: 118, Sales_Amount: 6018},
+        {Transaction_ID: 1029, Year: 2023, Region: "East", Rep: "Rep_C", Item: "Widget", Units_Sold: 51, Unit_Price: 90, Sales_Amount: 4590},
+        {Transaction_ID: 1030, Year: 2023, Region: "South", Rep: "Rep_C", Item: "Gizmo", Units_Sold: 31, Unit_Price: 42, Sales_Amount: 1302},
+        {Transaction_ID: 1031, Year: 2023, Region: "West", Rep: "Rep_D", Item: "Gadget", Units_Sold: 64, Unit_Price: 89, Sales_Amount: 5696},
+        {Transaction_ID: 1032, Year: 2023, Region: "West", Rep: "Rep_A", Item: "Thingamajig", Units_Sold: 66, Unit_Price: 86, Sales_Amount: 5676},
+        {Transaction_ID: 1033, Year: 2024, Region: "East", Rep: "Rep_B", Item: "Widget", Units_Sold: 15, Unit_Price: 30, Sales_Amount: 450},
+        {Transaction_ID: 1034, Year: 2024, Region: "South", Rep: "Rep_D", Item: "Widget", Units_Sold: 20, Unit_Price: 89, Sales_Amount: 1780},
+        {Transaction_ID: 1035, Year: 2024, Region: "South", Rep: "Rep_A", Item: "Widget", Units_Sold: 37, Unit_Price: 99, Sales_Amount: 3663},
+        {Transaction_ID: 1036, Year: 2024, Region: "North", Rep: "Rep_A", Item: "Gadget", Units_Sold: 53, Unit_Price: 38, Sales_Amount: 2014},
+        {Transaction_ID: 1037, Year: 2024, Region: "North", Rep: "Rep_A", Item: "Widget", Units_Sold: 46, Unit_Price: 69, Sales_Amount: 3174},
+        {Transaction_ID: 1038, Year: 2024, Region: "North", Rep: "Rep_C", Item: "Gizmo", Units_Sold: 69, Unit_Price: 116, Sales_Amount: 8004},
+        {Transaction_ID: 1039, Year: 2024, Region: "North", Rep: "Rep_C", Item: "Thingamajig", Units_Sold: 55, Unit_Price: 84, Sales_Amount: 4620},
+        {Transaction_ID: 1040, Year: 2024, Region: "West", Rep: "Rep_A", Item: "Gadget", Units_Sold: 43, Unit_Price: 118, Sales_Amount: 5074},
+        {Transaction_ID: 1041, Year: 2024, Region: "West", Rep: "Rep_D", Item: "Gadget", Units_Sold: 58, Unit_Price: 51, Sales_Amount: 2958},
+        {Transaction_ID: 1042, Year: 2024, Region: "East", Rep: "Rep_C", Item: "Widget", Units_Sold: 29, Unit_Price: 27, Sales_Amount: 783},
+        {Transaction_ID: 1043, Year: 2024, Region: "East", Rep: "Rep_A", Item: "Gadget", Units_Sold: 43, Unit_Price: 101, Sales_Amount: 4343},
+        {Transaction_ID: 1044, Year: 2024, Region: "South", Rep: "Rep_E", Item: "Gizmo", Units_Sold: 41, Unit_Price: 26, Sales_Amount: 1066},
+        {Transaction_ID: 1045, Year: 2024, Region: "North", Rep: "Rep_E", Item: "Gadget", Units_Sold: 45, Unit_Price: 114, Sales_Amount: 5130},
+        {Transaction_ID: 1046, Year: 2024, Region: "South", Rep: "Rep_D", Item: "Thingamajig", Units_Sold: 51, Unit_Price: 89, Sales_Amount: 4539},
+        {Transaction_ID: 1047, Year: 2024, Region: "North", Rep: "Rep_D", Item: "Widget", Units_Sold: 27, Unit_Price: 50, Sales_Amount: 1350},
+        {Transaction_ID: 1048, Year: 2024, Region: "North", Rep: "Rep_A", Item: "Widget", Units_Sold: 11, Unit_Price: 29, Sales_Amount: 319},
+        {Transaction_ID: 1049, Year: 2025, Region: "West", Rep: "Rep_A", Item: "Gizmo", Units_Sold: 59, Unit_Price: 41, Sales_Amount: 2419},
+        {Transaction_ID: 1050, Year: 2025, Region: "North", Rep: "Rep_D", Item: "Thingamajig", Units_Sold: 43, Unit_Price: 39, Sales_Amount: 1677},
+        {Transaction_ID: 1051, Year: 2025, Region: "West", Rep: "Rep_B", Item: "Gadget", Units_Sold: 10, Unit_Price: 105, Sales_Amount: 1050},
+        {Transaction_ID: 1052, Year: 2025, Region: "South", Rep: "Rep_B", Item: "Gizmo", Units_Sold: 39, Unit_Price: 117, Sales_Amount: 4563},
+        {Transaction_ID: 1053, Year: 2025, Region: "North", Rep: "Rep_A", Item: "Gizmo", Units_Sold: 42, Unit_Price: 87, Sales_Amount: 3654},
+        {Transaction_ID: 1054, Year: 2025, Region: "East", Rep: "Rep_D", Item: "Widget", Units_Sold: 59, Unit_Price: 106, Sales_Amount: 6254},
+        {Transaction_ID: 1055, Year: 2025, Region: "South", Rep: "Rep_C", Item: "Gizmo", Units_Sold: 38, Unit_Price: 45, Sales_Amount: 1710},
+        {Transaction_ID: 1056, Year: 2025, Region: "South", Rep: "Rep_C", Item: "Gizmo", Units_Sold: 63, Unit_Price: 41, Sales_Amount: 2583},
+        {Transaction_ID: 1057, Year: 2025, Region: "West", Rep: "Rep_D", Item: "Gadget", Units_Sold: 14, Unit_Price: 30, Sales_Amount: 420},
+        {Transaction_ID: 1058, Year: 2025, Region: "North", Rep: "Rep_E", Item: "Widget", Units_Sold: 69, Unit_Price: 29, Sales_Amount: 2001},
+        {Transaction_ID: 1059, Year: 2025, Region: "West", Rep: "Rep_C", Item: "Thingamajig", Units_Sold: 20, Unit_Price: 26, Sales_Amount: 520},
+        {Transaction_ID: 1060, Year: 2025, Region: "South", Rep: "Rep_C", Item: "Widget", Units_Sold: 25, Unit_Price: 43, Sales_Amount: 1075},
+        {Transaction_ID: 1061, Year: 2025, Region: "South", Rep: "Rep_C", Item: "Gadget", Units_Sold: 22, Unit_Price: 35, Sales_Amount: 770},
+        {Transaction_ID: 1062, Year: 2025, Region: "South", Rep: "Rep_E", Item: "Gizmo", Units_Sold: 42, Unit_Price: 57, Sales_Amount: 2394},
+        {Transaction_ID: 1063, Year: 2025, Region: "East", Rep: "Rep_E", Item: "Gadget", Units_Sold: 60, Unit_Price: 94, Sales_Amount: 5640},
+        {Transaction_ID: 1064, Year: 2025, Region: "West", Rep: "Rep_B", Item: "Gizmo", Units_Sold: 41, Unit_Price: 99, Sales_Amount: 4059}
+    ];
+
+    // --- DATASET: CONCEPTUAL CLOTHING DATA (FOR MC PART) ---
+    // This data is used only for the MC modal and inline display, as per the original design logic
+    const clothingData = [
+        {id: 100, cat: "Tops", prod: "Cotton Tee", stock: 200, price: 15.00, season: "Summer"},
+        {id: 101, cat: "Tops", prod: "Graphic T-Shirt", stock: 150, price: 20.00, season: "Summer"},
+        {id: 102, cat: "Bottoms", prod: "Slim Fit Jeans", stock: 80, price: 45.00, season: "All-Year"},
+        {id: 103, cat: "Bottoms", prod: "Cargo Shorts", stock: 60, price: 30.00, season: "Summer"},
+        {id: 104, cat: "Accessory", prod: "Baseball Cap", stock: 120, price: 18.00, season: "Summer"},
+        {id: 105, cat: "Outerwear", prod: "Leather Jacket", stock: 15, price: 120.00, season: "Winter"},
+        {id: 106, cat: "Outerwear", prod: "Denim Jacket", stock: 25, price: 75.00, season: "Fall"},
+        {id: 107, cat: "Tops", prod: "Flannel Shirt", stock: 90, price: 35.00, season: "Fall"},
+        {id: 108, cat: "Bottoms", prod: "Chinos", stock: 55, price: 50.00, season: "All-Year"},
+        {id: 109, cat: "Accessory", prod: "Beanie Hat", stock: 200, price: 12.00, season: "Winter"},
+        {id: 110, cat: "Tops", prod: "Polo Shirt", stock: 100, price: 28.00, season: "Summer"},
+        {id: 111, cat: "Outerwear", prod: "Winter Parka", stock: 10, price: 150.00, season: "Winter"},
+        {id: 112, cat: "Accessory", prod: "Leather Belt", stock: 75, price: 25.00, season: "All-Year"},
+        {id: 113, cat: "Tops", prod: "Hoodie", stock: 18, price: 45.00, season: "Winter"},
+        {id: 114, cat: "Bottoms", prod: "Sweatpants", stock: 40, price: 35.00, season: "Winter"},
+        {id: 115, cat: "Accessory", prod: "Scarf", stock: 60, price: 15.00, season: "Winter"},
+        {id: 116, cat: "Tops", prod: "Silk Blouse", stock: 30, price: 65.00, season: "Spring"},
+        {id: 117, cat: "Bottoms", prod: "Leggings", stock: 110, price: 22.00, season: "All-Year"},
+        {id: 118, cat: "Outerwear", prod: "Raincoat", stock: 20, price: 80.00, season: "Spring"},
+        {id: 119, cat: "Accessory", prod: "Sunglasses", stock: 5, price: 90.00, season: "Summer"}
+    ];
+
+    // --- MC ANSWER KEY (Obfuscated) ---
+    // Encoded JSON {"mc1":"A","mc2":"B","mc3":"C","mc4":"A","mc5":"B"}
+    const _mEncoded = "eyJtYzEiOiJBIiwibWMyIjoiQiIsIm1jMyI6IkMiLCJtYzQiOiJBIiwibWM1IjoiQiJ9";
+
+    // Render Data Table for MC Section
+    function renderDataTable() {
+        const tbody = document.getElementById('inline-data-body');
+        const modalTable = document.getElementById('modal-table-content');
+        
+        let headerRow = `<thead><tr><th style="width:30px"></th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th></tr></thead>`;
+        let html = ``;
+        
+        // Excel Row 1: Field Names
+        html += `<tr>
+            <td class="row-header">1</td>
+            <td class="data-cell">Item_ID</td>
+            <td class="data-cell">Category</td>
+            <td class="data-cell">Product</td>
+            <td class="data-cell">Stock</td>
+            <td class="data-cell">Price</td>
+            <td class="data-cell">Season</td>
+        </tr>`;
+
+        // Excel Rows 2-21: Data
+        clothingData.forEach((row, index) => {
+            html += `<tr>
+                <td class="row-header">${index + 2}</td>
+                <td class="data-cell">${row.id}</td>
+                <td class="data-cell">${row.cat}</td>
+                <td class="data-cell">${row.prod}</td>
+                <td class="data-cell">${row.stock}</td>
+                <td class="data-cell">${row.price.toFixed(2)}</td>
+                <td class="data-cell">${row.season}</td>
+            </tr>`;
+        });
+
+        tbody.innerHTML = html;
+        if(modalTable) modalTable.innerHTML = headerRow + `<tbody>${html}</tbody>`;
+    }
+
+    // Practical Answer Key (Base64 Encoded)
+    // Updated for the STATIC 64-row dataset provided
+    /*
+        Q1 (1015 Comm): 59 Units, $60 Price = 3540 Sales. Tiers: 0->0.02, 2500->0.05, 5000->0.1. Result: 0.05
+        Q2 (1010 Flag): Units 18. >40? No. "Low"
+        Q3 (1022 Bonus): Sales 5760 (>5000) AND Units 64 (>50). Result: "Gold"
+        Q4 (1040 Ship): West, Gadget. Matrix: 14.
+        Q5 (West 2024 Sales): 5074 + 2958 = 8032.
+        Q6 (East Units > 45): 1013, 1022, 1025, 1029, 1054, 1063. Total = 6.
+        Q7 (Avg Price Gizmo 2023): (98+37+42)/3 = 59.
+        Q8 (Avg Sales South): 2541.38
+        Q9 (% Diff 24-25): (40789 - 49267) / 49267 = -17.21%
+        Q10 (% North Grand Total): 57412 / 194201 = 29.56%
+    */
+    // JSON: {"ans_q1":"0.05","ans_q2":"Low","ans_q3":"Gold","ans_q4":"14","ans_q5":"8032","ans_q6":"6","ans_q7":"59","ans_q8":"2541.38","ans_q9":"-17.21%","ans_q10":"29.56%"}
+    const _pKey = "eyJhbnNfcTEiOiIwLjA1IiwiYW5zX3EyIjoiTG93IiwiYW5zX3EzIjoiR29sZCIsImFuc19xNCI6IjE0IiwiYW5zX3E1IjoiODAzMiIsImFuc19xNiI6IjYiLCJhbnNfcTciOiI1OSIsImFuc19xOCI6IjI1NDEuMzgiLCJhbnNfcTkiOiItMTcuMjElIiwiYW5zX3ExMCI6IjI5LjU2JSJ9";
+
+    function showPage(pageId) {
+        pages.forEach(p => document.getElementById(p).classList.add('hidden'));
+        document.getElementById(pageId).classList.remove('hidden');
+        window.scrollTo(0,0);
+    }
+
+    // --- STEP 1: START EXAM ---
+    function startExam() {
+        const name = document.getElementById('landing_name').value.trim();
+        const email = document.getElementById('landing_email').value.trim();
+        if (!name || !email) {
+            document.getElementById('landing-error').style.display = 'block';
+            return;
+        }
+        studentInfo.name = name;
+        studentInfo.email = email;
+        document.getElementById('student_name').value = name;
+        document.getElementById('student_email').value = email;
+
+        renderDataTable(); 
+        showPage('mc-page');
+    }
+
+    // --- STEP 2: MC LOGIC ---
+    function toggleModal() {
+        const modal = document.getElementById('dataModal');
+        const overlay = document.getElementById('modalOverlay');
+        const isHidden = modal.style.display === 'none' || modal.style.display === '';
+        modal.style.display = isHidden ? 'block' : 'none';
+        overlay.style.display = isHidden ? 'block' : 'none';
+    }
+
+    function collectMC() {
+        for (let i = 1; i <= 5; i++) {
+            const key = "mc" + i;
+            const selected = document.querySelector(`input[name="${key}"]:checked`);
+            const val = selected ? selected.value : "Skipped";
+            mcAnswers[key] = val;
+            const hiddenInput = document.getElementById('hidden_' + key);
+            if(hiddenInput) hiddenInput.value = val;
+        }
+    }
+
+    // --- STEP 3: EXCEL GENERATION (STATIC FILE DOWNLOAD) ---
+    
+    // Updated Reference Tables provided in prompt
+    const commTable = [
+        ["Sales Threshold", "Rate"],
+        [0, 0.02],
+        [2500, 0.05],
+        [5000, 0.10],
+        [8000, 0.15]
+    ];
+    
+    const shippingMatrix = [
+        ["Region/Item", "Widget", "Gizmo", "Gadget", "Thingamajig"],
+        ["North", 12.50, 15.00, 10.00, 20.00],
+        ["South", 10.00, 14.00, 11.50, 18.00],
+        ["East",  11.00, 13.00, 12.00, 19.50],
+        ["West",  15.00, 16.00, 14.00, 25.00]
+    ];
+
+    function generateAndDownloadExcel() {
+        const wb = XLSX.utils.book_new();
+        
+        // 1. DATA SHEET
+        // We use the staticData array defined at the top
+        const wsData = XLSX.utils.json_to_sheet(staticData);
+        XLSX.utils.book_append_sheet(wb, wsData, "Data");
+        
+        // 2. REFERENCE TABLES SHEET
+        let refData = [
+            ["TABLE A: COMMISSION TIERS"], 
+            ...commTable, 
+            [], [], 
+            ["TABLE B: SHIPPING MATRIX"], 
+            ...shippingMatrix
+        ];
+        const wsRef = XLSX.utils.aoa_to_sheet(refData);
+        XLSX.utils.book_append_sheet(wb, wsRef, "Reference_Tables");
+        
+        // Generate with the specific name requested
+        XLSX.writeFile(wb, "midterm1_acct311.xlsx");
+    }
+
+    // --- STEP 4: SUBMISSION & GRADING ---
+    
+    // Helper for fuzzy percentage matching
+    function checkFuzzyPercentage(userVal, correctVal) {
+        let uStr = String(userVal).trim().toLowerCase().replace(/,/g, '').replace(/%/g, '');
+        let kStr = String(correctVal).trim().toLowerCase().replace(/,/g, '').replace(/%/g, '');
+        
+        let u = parseFloat(uStr);
+        let k = parseFloat(kStr);
+        
+        if (isNaN(u) || isNaN(k)) return false;
+
+        // 1. Exact match (29.56 vs 29.56)
+        if (Math.abs(u - k) < 0.01) return true;
+        
+        // 2. Decimal match (0.2956 vs 29.56)
+        if (Math.abs(u * 100 - k) < 0.01) return true;
+        
+        // 3. Rounded Integer (30 vs 29.56)
+        if (Math.round(u) === Math.round(k)) return true;
+        
+        return false;
+    }
+
+    function submitExam(e) {
+        e.preventDefault();
+        
+        collectMC();
+
+        const form = document.getElementById('examForm');
+        const submitMsg = document.getElementById('submitMsg');
+        
+        submitMsg.innerHTML = "Grading & Submitting...";
+
+        const key = JSON.parse(atob(_pKey));
+        const mcKeyDecoded = JSON.parse(atob(_mEncoded));
+
+        let pScore = 0;
+        let excelResultsHTML = "";
+        const questionMap = { 'ans_q1': 'Q1', 'ans_q2': 'Q2', 'ans_q3': 'Q3', 'ans_q4': 'Q4', 'ans_q5': 'Q5', 'ans_q6': 'Q6', 'ans_q7': 'Q7', 'ans_q8': 'Q8', 'ans_q9': 'Q9', 'ans_q10': 'Q10' };
+        
+        window.examResultData = { mc: {}, practical: {} };
+        const data = {};
+
+        for (let id in questionMap) {
+            const label = questionMap[id];
+            const correctVal = key[id];
+            let userVal = document.getElementById(id).value || "-";
+            
+            const rawUser = String(userVal).trim().toLowerCase().replace(/,/g, '');
+            const rawKey = String(correctVal).trim().toLowerCase().replace(/,/g, '');
+            
+            let isMatch = false;
+
+            if (id === 'ans_q9' || id === 'ans_q10') {
+                 isMatch = checkFuzzyPercentage(userVal, correctVal);
+            } 
+            else if (id === 'ans_q1') {
+                // Check 0.05
+                let uStr = String(userVal).trim().toLowerCase();
+                let kStr = String(correctVal).trim().toLowerCase().replace(/,/g, '').replace(/%/g, '');
+                let k = parseFloat(kStr);
+
+                if (uStr.includes('%')) {
+                      let numPart = parseFloat(uStr.replace(/%/g, ''));
+                      if (!isNaN(numPart) && Math.abs(numPart/100 - k) < 0.0001) isMatch = true;
+                } else {
+                      let u = parseFloat(uStr);
+                      if (!isNaN(u) && Math.abs(u - k) < 0.0001) isMatch = true;
+                }
+            }
+            else if (id === 'ans_q8') {
+                // Value 2541.38
+                let u = parseFloat(rawUser);
+                let k = parseFloat(rawKey); 
+                
+                if (!isNaN(u) && !isNaN(k)) {
+                    if (Math.abs(u - k) < 0.1) isMatch = true;
+                    else if (Math.round(u) === Math.round(k)) isMatch = true;
+                }
+            }
+            else {
+                 if (rawUser === rawKey.toLowerCase()) isMatch = true;
+                 else {
+                     let u = parseFloat(rawUser);
+                     let k = parseFloat(rawKey);
+                     if (!isNaN(u) && !isNaN(k) && Math.abs(u - k) < 0.005) isMatch = true;
+                 }
+            }
+
+            if (isMatch) pScore += 2;
+            
+            data[label + '_Status'] = isMatch ? "Correct" : "Incorrect";
+
+            window.examResultData.practical[id] = { 
+                q: label, 
+                user: userVal, 
+                correct: correctVal, 
+                status: isMatch ? "Correct" : "Incorrect" 
+            };
+
+            excelResultsHTML += `<tr><td>${label}</td><td>${userVal}</td><td class="${isMatch?'match':'mismatch'}">${isMatch?'✅ Correct':'❌ Incorrect'}</td></tr>`;
+        }
+        excelScore = pScore;
+
+        let mcResultsHTML = "";
+        let mScore = 0;
+        for (let i = 1; i <= 5; i++) {
+            const qKey = "mc" + i;
+            const uAns = mcAnswers[qKey] || "-";
+            const cAns = mcKeyDecoded[qKey];
+            const isCorrect = uAns === cAns;
+            if (isCorrect) mScore += 1;
+            
+            data['MC' + i + '_Status'] = isCorrect ? "Correct" : "Incorrect";
+
+            window.examResultData.mc[qKey] = {
+                q: "Q" + i,
+                user: uAns,
+                correct: cAns,
+                status: isCorrect ? "Correct" : "Incorrect"
+            };
+
+            mcResultsHTML += `<tr><td>Q${i}</td><td>${uAns}</td><td class="${isCorrect?'match':'mismatch'}">${isCorrect?'✅ Correct':'❌ Incorrect'}</td></tr>`;
+        }
+        mcScore = mScore;
+
+        const totalCalcScore = excelScore + mcScore;
+
+        const formData = new FormData(form);
+        formData.forEach((value, key) => data[key] = value);
+        data['Total_Score'] = totalCalcScore;
+        
+        if(GOOGLE_SCRIPT_URL) {
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors', 
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            }).then(() => {
+                console.log("Data sent to Google Sheet with Score");
+            }).catch(err => console.error("Error submitting to sheet", err));
+        }
+
+        document.getElementById('mc-results-body').innerHTML = mcResultsHTML;
+        document.getElementById('excel-results-body').innerHTML = excelResultsHTML;
+        document.getElementById('finalScoreDisplay').innerHTML = `Total Score: ${totalCalcScore} / 25`;
+        document.getElementById('student-summary').innerText = `Student: ${studentInfo.name} (${studentInfo.email})`;
+        showPage('results-page');
+    }
+
+    function downloadStudentAnswers() {
+        if (!window.examResultData) {
+            alert("Error: Results not found. Please submit first.");
+            return;
+        }
+
+        let content = "ACCT 311 - MIDTERM 1 - DETAILED RESULT RECORD\n";
+        content += "==============================================\n";
+        content += `Student: ${studentInfo.name}\n`;
+        content += `Email:   ${studentInfo.email}\n`;
+        content += `Date:    ${new Date().toLocaleString()}\n`;
+        content += "==============================================\n\n";
+        
+        content += "PART 1: MULTIPLE CHOICE\n";
+        content += "----------------------------------------------\n";
+        for (let i = 1; i <= 5; i++) {
+            const k = "mc" + i;
+            const r = window.examResultData.mc[k];
+            if(r) {
+                content += `${r.q}: You answered [${r.user}] | Correct: [${r.correct}] -> ${r.status}\n`;
+            }
+        }
+        
+        content += "\nPART 2: EXCEL PRACTICAL\n";
+        content += "----------------------------------------------\n";
+        const questionMap = ['ans_q1', 'ans_q2', 'ans_q3', 'ans_q4', 'ans_q5', 'ans_q6', 'ans_q7', 'ans_q8', 'ans_q9', 'ans_q10'];
+        
+        questionMap.forEach(id => {
+            const r = window.examResultData.practical[id];
+            if(r) {
+                 content += `${r.q}: You answered [${r.user}] | Correct: [${r.correct}] -> ${r.status}\n`;
+            }
+        });
+
+        content += "\n==============================================\n";
+        content += "Keep this file for your records.\n";
+
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${studentInfo.name.replace(/\s+/g,'_')}_Midterm_Answers.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+
+    function exitExam() {
+        if(confirm("Are you sure you want to exit? Ensure you have saved your answer record.")) {
+            window.close();
+            document.body.innerHTML = "<div style='display:flex; justify-content:center; align-items:center; height:100vh; background:#000; color:white; flex-direction:column;'><h1>Exam Ended</h1><p>You may now close this tab.</p></div>";
+        }
+    }
+
+    window.onbeforeunload = function() { return "Data will be lost if you leave the page, are you sure?"; };
+    document.addEventListener('contextmenu', event => event.preventDefault());
+
+</script>
+</body>
+</html>
