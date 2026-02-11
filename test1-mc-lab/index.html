@@ -467,7 +467,9 @@
             <div class="section-header" style="font-size:1.2rem; margin-bottom:15px;">Lookup & Logic</div>
             
             <div class="task-instruction">
-                <strong>Task 1 (XLOOKUP):</strong> In the <strong>Comm_Rate</strong> column, use XLOOKUP to return the appropriate commission rate by matching each Sales_Amount to the Commission Tiers table (Table A in the Reference Tables). Round the commission rate to 2 decimal places. <strong>Make sure to populate the entire column.</strong>
+                <strong>Task 1 (XLOOKUP):</strong> In the <strong>Comm_Rate</strong> column, use XLOOKUP to return the appropriate commission rate by matching each Sales_Amount to the Commission Tiers table (Table A in the Reference Tables). If Sales = 0, commission is $0 (no sales → no commission).
+
+                If 0 < Sales < 2,500, then 2% (0.02) commission etc. Round the commission rate to 2 decimal places. <strong>Make sure to populate the entire column.</strong>
             </div>
             <label>Question 1: What is the Commission Rate for <strong>Transaction ID 1015</strong>?</label>
             <input type="text" id="ans_q1" name="ans_q1" required placeholder="e.g., 0.06">
@@ -488,7 +490,7 @@
             <input type="text" id="ans_q3" name="ans_q3" required placeholder="e.g., Bronze">
 
             <div class="task-instruction" style="margin-top:20px;">
-                <strong>Task 4 (Lookup Matrix):</strong> In the <strong>Shipping_Cost</strong> column, calculate the cost based on Region and Item. Refer to Reference Table B (Shipping Matrix). <strong>Make sure to populate the entire column.</strong>
+                <strong>Task 4 (Lookup Matrix-Use Index-Xmatch):</strong> In the <strong>Shipping_Cost</strong> column, calculate the cost based on Region and Item. Refer to Reference Table B (Shipping Matrix). <strong>Make sure to populate the entire column.</strong>
             </div>
             <label>Question 4: What is the Shipping Cost for <strong>Transaction ID 1040</strong>?</label>
             <input type="number" step="0.01" id="ans_q4" name="ans_q4" required placeholder="e.g., 12.50">
@@ -522,7 +524,7 @@
             <label style="margin-top:15px;">Question 9: Pivot 2 - <strong>% Difference</strong> in Total Sales from <strong>2024 to 2025</strong>?</label>
             <input type="text" id="ans_q9" name="ans_q9" required placeholder="e.g., 15.20%">
 
-            <label style="margin-top:15px;">Question 10: Pivot 3 - <strong>% of Grand Total</strong> for <strong>North</strong>?</label>
+            <label style="margin-top:15px;">Question 10: Pivot 3 - <strong>Sales_Amounts as % of Grand Total</strong> for <strong>North</strong>?</label>
             <input type="text" id="ans_q10" name="ans_q10" required placeholder="e.g., 24.50%">
         </div>
 
