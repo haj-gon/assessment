@@ -467,19 +467,19 @@
             <div class="section-header" style="font-size:1.2rem; margin-bottom:15px;">Lookup & Logic</div>
             
             <div class="task-instruction">
-                <strong>Task 1 (XLOOKUP):</strong> Create column <strong>Comm_Rate</strong> using XLOOKUP on <strong>Sales_Amount</strong> vs Commission_Tiers table (Table A in Reference Tables). Round your answer to 2 decimal places.
+                <strong>Task 1 (XLOOKUP):</strong> In the <strong>Comm_Rate</strong> column, use XLOOKUP to return the appropriate commission rate by matching each Sales_Amount to the Commission Tiers table (Table A in the Reference Tables). Round the commission rate to 2 decimal places. <strong>Make sure to populate the entire column.</strong>
             </div>
             <label>Question 1: What is the Commission Rate for <strong>Transaction ID 1015</strong>?</label>
             <input type="text" id="ans_q1" name="ans_q1" required placeholder="e.g., 0.06">
 
             <div class="task-instruction" style="margin-top:20px;">
-                <strong>Task 2 (Simple IF):</strong> Create column <strong>Volume_Flag</strong>. If Units > 40 return "High", else "Low".
+                <strong>Task 2 (Simple IF):</strong> Populate the <strong>entire Volume_Flag</strong> column. If <strong>Units_Sold</strong> > 40 return "High", else "Low".
             </div>
             <label>Question 2: What is the Volume Flag for <strong>Transaction ID 1010</strong>?</label>
             <input type="text" id="ans_q2" name="ans_q2" required placeholder="High or Low">
 
             <div class="task-instruction" style="margin-top:20px;">
-                <strong>Task 3 (Nested IF):</strong> Create <strong>Bonus_Category</strong>.<br>
+                <strong>Task 3 (Nested IF):</strong> Populate the <strong>entire Bonus_Category</strong> column.<br>
                 1. If Sales_Amount > 5000 AND Units_Sold > 50, then "Gold".<br>
                 2. If Sales_Amount > 2000, then "Silver".<br>
                 3. Else "Bronze".
@@ -488,7 +488,7 @@
             <input type="text" id="ans_q3" name="ans_q3" required placeholder="e.g., Bronze">
 
             <div class="task-instruction" style="margin-top:20px;">
-                <strong>Task 4 (Lookup Matrix):</strong> Calculate <strong>Shipping_Cost</strong> based on Region and Item. Refer to Reference Table B (Shipping Matrix).
+                <strong>Task 4 (Lookup Matrix):</strong> In the <strong>Shipping_Cost</strong> column, calculate the cost based on Region and Item. Refer to Reference Table B (Shipping Matrix). <strong>Make sure to populate the entire column.</strong>
             </div>
             <label>Question 4: What is the Shipping Cost for <strong>Transaction ID 1040</strong>?</label>
             <input type="number" step="0.01" id="ans_q4" name="ans_q4" required placeholder="e.g., 12.50">
@@ -496,12 +496,14 @@
 
         <div class="card">
             <div class="section-header" style="font-size:1.2rem; margin-bottom:15px;">Conditional Analysis</div>
-            <p style="font-size:0.9rem; color:#666; margin-bottom:15px;"><em>Instruction: Use conditional logic formulas (e.g., SUMIFS, COUNTIFS, AVERAGEIFS) to answer these questions. Round decimals to 2 places.</em></p>
+            <div class="task-instruction">
+                <strong>Instruction:</strong> Use conditional logic formulas (e.g., SUMIFS, COUNTIFS, AVERAGEIFS) to answer these questions. Round decimals to 2 places.
+            </div>
             
             <label>Question 5: Total Sales Amount for <strong>"West"</strong> region in <strong>2024</strong>?</label>
             <input type="number" id="ans_q5" name="ans_q5" required>
 
-            <label style="margin-top:15px;">Question 6: Count of transactions in <strong>"East"</strong> with <strong>Units > 45</strong>?</label>
+            <label style="margin-top:15px;">Question 6: Count of transactions in <strong>"East"</strong> with <strong>Units_Sold > 45</strong>?</label>
             <input type="number" id="ans_q6" name="ans_q6" required>
 
             <label style="margin-top:15px;">Question 7: Average <strong>Unit_Price</strong> for <strong>"Gizmo"</strong> in <strong>2023</strong>? (Whole number)</label>
@@ -600,8 +602,9 @@
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyw5xU9ohAK8E9slxTJRmnyNV8xjCnsTmMHZIMXrEMwp6zKMUokSHSV2kqahUDbSYCbXw/exec"; 
 
     // --- DATASET: STATIC DATA (PROVIDED BY INSTRUCTOR) ---
-    // Transaction_ID	Year	Region	Rep	Item	Units_Sold	Unit_Price	Sales_Amount
-    const staticData = [
+    // Transaction_ID   Year    Region  Rep Item    Units_Sold  Unit_Price  Sales_Amount
+    // Updated to include empty columns for the practical test
+    let staticData = [
         {Transaction_ID: 1001, Year: 2022, Region: "West", Rep: "Rep_E", Item: "Gizmo", Units_Sold: 23, Unit_Price: 108, Sales_Amount: 2484},
         {Transaction_ID: 1002, Year: 2022, Region: "East", Rep: "Rep_B", Item: "Thingamajig", Units_Sold: 41, Unit_Price: 92, Sales_Amount: 3772},
         {Transaction_ID: 1003, Year: 2022, Region: "North", Rep: "Rep_E", Item: "Gadget", Units_Sold: 30, Unit_Price: 84, Sales_Amount: 2520},
@@ -667,6 +670,15 @@
         {Transaction_ID: 1063, Year: 2025, Region: "East", Rep: "Rep_E", Item: "Gadget", Units_Sold: 60, Unit_Price: 94, Sales_Amount: 5640},
         {Transaction_ID: 1064, Year: 2025, Region: "West", Rep: "Rep_B", Item: "Gizmo", Units_Sold: 41, Unit_Price: 99, Sales_Amount: 4059}
     ];
+    
+    // Add empty columns to staticData for Excel generation
+    staticData = staticData.map(row => ({
+        ...row,
+        Comm_Rate: "",
+        Volume_Flag: "",
+        Bonus_Category: "",
+        Shipping_Cost: ""
+    }));
 
     // --- DATASET: CONCEPTUAL CLOTHING DATA (FOR MC PART) ---
     // This data is used only for the MC modal and inline display, as per the original design logic
@@ -816,7 +828,7 @@
         const wb = XLSX.utils.book_new();
         
         // 1. DATA SHEET
-        // We use the staticData array defined at the top
+        // We use the staticData array defined at the top (which now includes empty columns)
         const wsData = XLSX.utils.json_to_sheet(staticData);
         XLSX.utils.book_append_sheet(wb, wsData, "Data");
         
@@ -839,8 +851,8 @@
     
     // Helper for fuzzy percentage matching
     function checkFuzzyPercentage(userVal, correctVal) {
-        let uStr = String(userVal).trim().toLowerCase().replace(/,/g, '').replace(/%/g, '');
-        let kStr = String(correctVal).trim().toLowerCase().replace(/,/g, '').replace(/%/g, '');
+        let uStr = String(userVal).trim().toLowerCase().replace(/,/g, '').replace(/%/g, '').replace(/"/g, '');
+        let kStr = String(correctVal).trim().toLowerCase().replace(/,/g, '').replace(/%/g, '').replace(/"/g, '');
         
         let u = parseFloat(uStr);
         let k = parseFloat(kStr);
@@ -884,8 +896,8 @@
             const correctVal = key[id];
             let userVal = document.getElementById(id).value || "-";
             
-            const rawUser = String(userVal).trim().toLowerCase().replace(/,/g, '');
-            const rawKey = String(correctVal).trim().toLowerCase().replace(/,/g, '');
+            const rawUser = String(userVal).trim().toLowerCase().replace(/,/g, '').replace(/"/g, '');
+            const rawKey = String(correctVal).trim().toLowerCase().replace(/,/g, '').replace(/"/g, '');
             
             let isMatch = false;
 
@@ -894,8 +906,8 @@
             } 
             else if (id === 'ans_q1') {
                 // Check 0.05
-                let uStr = String(userVal).trim().toLowerCase();
-                let kStr = String(correctVal).trim().toLowerCase().replace(/,/g, '').replace(/%/g, '');
+                let uStr = String(userVal).trim().toLowerCase().replace(/"/g, '');
+                let kStr = String(correctVal).trim().toLowerCase().replace(/,/g, '').replace(/%/g, '').replace(/"/g, '');
                 let k = parseFloat(kStr);
 
                 if (uStr.includes('%')) {
