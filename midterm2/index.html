@@ -402,6 +402,10 @@
         <input type="hidden" id="student_name" name="student_name">
         <input type="hidden" id="student_email" name="student_email">
         
+        <!-- NEW: Time Tracking Hidden Fields -->
+        <input type="hidden" id="start_time" name="start_time">
+        <input type="hidden" id="end_time" name="end_time">
+        
         <!-- HIDDEN MC ANSWERS FOR SUBMISSION -->
         <input type="hidden" id="hidden_mc1" name="mc1">
         <input type="hidden" id="hidden_mc2" name="mc2">
@@ -601,7 +605,7 @@
     let mcAnswers = {};
     
     // Updated Google Script URL
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyw5xU9ohAK8E9slxTJRmnyNV8xjCnsTmMHZIMXrEMwp6zKMUokSHSV2kqahUDbSYCbXw/exec"; 
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxO7dl-0sjgpHS6uxQvnma9KMWPinDlS3sq73QksRnOYIx_1hNKkCWQ64339tSuiCWKwA/exec"; 
 
     // --- OBFUSCATED ANSWER KEYS ---
     const _mChunks = [
@@ -639,6 +643,9 @@
         studentInfo.email = email;
         document.getElementById('student_name').value = name;
         document.getElementById('student_email').value = email;
+
+        // **NEW: Record Start Time**
+        document.getElementById('start_time').value = new Date().toLocaleString();
 
         showPage('mc-page');
     }
@@ -822,6 +829,9 @@
     function submitExam(e) {
         e.preventDefault();
         
+        // **NEW: Record End Time immediately upon submission**
+        document.getElementById('end_time').value = new Date().toLocaleString();
+        
         collectMC();
 
         const form = document.getElementById('examForm');
@@ -913,7 +923,10 @@
             // Defer fetch so it doesn't block UI transition
             setTimeout(() => {
                 const formData = new FormData(form);
+                
+                // Automatically pull in all fields including the new start_time and end_time
                 formData.forEach((value, key) => data[key] = value);
+                
                 data['Total_Score'] = totalCalcScore;
                 
                 if(GOOGLE_SCRIPT_URL) {
@@ -944,7 +957,8 @@
         content += "==============================================\n";
         content += `Student: ${studentInfo.name}\n`;
         content += `Email:   ${studentInfo.email}\n`;
-        content += `Date:    ${new Date().toLocaleString()}\n`;
+        content += `Start:   ${document.getElementById('start_time').value}\n`;
+        content += `End:     ${document.getElementById('end_time').value}\n`;
         content += "==============================================\n\n";
         
         content += "PART 1: MULTIPLE CHOICE (1.5 pts each)\n";
