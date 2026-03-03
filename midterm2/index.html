@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACCT 311 Midterm 2</title>
+    <!-- SheetJS Style Fork for generating formatted Excel files -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+    <style>
+        :root {
+            --zag-blue: #002f6c; /* Gonzaga Blue */
+            --zag-red: #ce1126;  /* Gonzaga Red */
+            --slate: #4b5563;
+            --bg-body: #f3f4f6;
+            --surface: #ffffff;
+            --border: #e2e8f0;
+            --success: #166534;
+            --danger: #991b1b;
+            --radius: 8px;
+            --excel-header-bg: #f8f9fa;
+            --excel-border: #d1d5db;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-body);
+            color: #1f2937;
+            margin: 0;
+            padding-bottom: 80px;
+            line-height: 1.6;
+            /* Global Text Selection Disabled for Security */
+            user-select: none; 
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
+        /* Allow typing in inputs */
+        input, select {
+            user-select: text;
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+        }
+
+        /* --- UTILITY CLASSES --- */
+        .hidden { display: none !important; }
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+        .card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 25px;
+            border: 1px solid var(--border);
+        }
+        .btn {
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+            transition: all 0.2s;
+            display: inline-block;
+        }
+        .btn-primary { background-color: var(--zag-blue); color: white; width: 100%; }
+        .btn-primary:hover { background-color: #001f4d; }
+        .btn-red { background-color: var(--zag-red); color: white; }
+        .btn-red:hover { background-color: #a30d1e; }
+        
+        /* --- LANDING PAGE --- */
+        #landing-page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #002f6c 0%, #0f172a 100%);
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        .bulldog-img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 4px solid white;
+            margin-bottom: 20px;
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        .landing-card {
+            background: white;
+            color: #1f2937;
+            padding: 40px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        input[type="text"], input[type="email"], input[type="number"], select {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0 20px 0;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+        input:focus, select:focus { outline: none; border-color: var(--zag-blue); }
+
+        /* --- MC SECTION STYLES --- */
+        .section-header {
+            border-left: 5px solid var(--zag-blue);
+            padding-left: 15px;
+            margin-bottom: 20px;
+            color: var(--zag-blue);
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .question-text { font-weight: 600; font-size: 1.1rem; margin-bottom: 15px; }
+        .code-snippet {
+            font-family: 'Consolas', monospace;
+            background: #eef2ff;
+            color: #dc2626;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            border: 1px solid #c7d2fe;
+        }
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .option-label:hover { background-color: #f8fafc; border-color: #cbd5e1; }
+        input[type="radio"] { margin-right: 12px; transform: scale(1.2); cursor: pointer; }
+        input[type="radio"]:checked + span { font-weight: bold; color: var(--zag-blue); }
+        .option-label:has(input:checked) { border-color: var(--zag-blue); background-color: #eff6ff; }
+
+        /* --- PRACTICAL SECTION STYLES --- */
+        .task-instruction {
+            background-color: #eff6ff;
+            border-left: 4px solid var(--zag-blue);
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+        
+        /* Distinct Question Formatting for Lab */
+        .q-badge {
+            background-color: var(--zag-red);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            margin-right: 8px;
+            font-size: 0.95em;
+            display: inline-block;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .lab-question-label {
+            font-size: 1.05rem;
+            font-weight: 600;
+            display: block;
+            margin-top: 25px;
+            margin-bottom: 10px;
+            color: #1f2937;
+            background: #f8fafc;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .btn-download {
+            background-color: #f59e0b;
+            color: #fff;
+            margin-top: 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            width: auto;
+        }
+        .btn-download:hover { background-color: #d97706; }
+
+        .warning-box {
+            background-color: #e0f2fe;
+            border: 2px solid #0ea5e9;
+            color: #0c4a6e;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        /* --- RESULTS PAGE --- */
+        .results-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .results-table th, .results-table td { border: 1px solid var(--border); padding: 12px; text-align: left; }
+        .results-table th { background-color: #f1f5f9; }
+        .correct-cell { color: var(--success); font-weight: bold; }
+        .match { background-color: #dcfce7; }
+        .mismatch { background-color: #fee2e2; }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+<!-- 1. LANDING PAGE -->
+<div id="landing-page">
+    <svg class="bulldog-img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+        <circle cx="100" cy="100" r="95" fill="white" stroke="#002f6c" stroke-width="5"/>
+        <path d="M40 50 Q20 20 60 40 Z" fill="#4b5563"/>
+        <path d="M160 50 Q180 20 140 40 Z" fill="#4b5563"/>
+        <path d="M50 50 Q100 20 150 50 Q170 100 150 150 Q100 180 50 150 Q30 100 50 50 Z" fill="#d1d5db"/>
+        <ellipse cx="75" cy="80" rx="15" ry="12" fill="white"/>
+        <circle cx="75" cy="80" r="5" fill="black"/>
+        <ellipse cx="125" cy="80" rx="15" ry="12" fill="white"/>
+        <circle cx="125" cy="80" r="5" fill="black"/>
+        <ellipse cx="100" cy="110" rx="25" ry="15" fill="#9ca3af"/>
+        <path d="M90 105 Q100 100 110 105 Q105 115 100 115 Q95 115 90 105" fill="#1f2937"/>
+        <path d="M75 120 Q100 150 125 120" fill="none" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/>
+        <path d="M85 130 L85 145" fill="none" stroke="#1f2937" stroke-width="2"/>
+        <path d="M115 130 L115 145" fill="none" stroke="#1f2937" stroke-width="2"/>
+        <path d="M60 155 Q100 175 140 155 L145 165 Q100 185 55 165 Z" fill="#ce1126"/>
+        <text x="100" y="190" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold" font-size="16" fill="#002f6c">ZAGS</text>
+    </svg>
+    
+    <div class="landing-card">
+        <h1 style="margin-top: 0; color: var(--zag-blue);">ACCT 311 Midterm 2</h1>
+        <p>Please enter your details to begin the examination.</p>
+        
+        <div style="background-color: #fff3cd; color: #856404; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #ffeeba; text-align: left;">
+            <strong>⚠️ IMPORTANT:</strong> 
+            <ul style="margin: 5px 0 0 20px; padding: 0;">
+                <li>Do NOT refresh this page or you will lose your progress.</li>
+                <li>You must <strong>submit your answers here</strong> AND <strong>upload your Excel file</strong> to Canvas.</li>
+            </ul>
+        </div>
+        
+        <div style="text-align: left;">
+            <label><strong>Full Name</strong></label>
+            <input type="text" id="landing_name" placeholder="e.g., Jane Doe">
+            
+            <label><strong>Zagmail Address</strong></label>
+            <input type="email" id="landing_email" placeholder="e.g., jdoe@zagmail.gonzaga.edu">
+        </div>
+
+        <button class="btn btn-primary" onclick="startExam()">Begin Test</button>
+        <p id="landing-error" style="color: var(--zag-red); display: none; margin-top: 10px;">Please fill out all fields.</p>
+    </div>
+</div>
+
+<!-- 2. MULTIPLE CHOICE SECTION -->
+<div id="mc-page" class="container hidden">
+
+    <div class="section-header">Part 1: Concepts (15 Points - 1.5 Pts Each)</div>
+    
+    <div class="card" style="background: #eff6ff; border-left: 4px solid var(--zag-red);">
+        <strong>Instructions:</strong> 
+        <br>1. Answer the 10 multiple choice questions.
+        <br>2. Each question is worth 1.5 points.
+        <br>3. You may return to Part 1 at any time before you submit the test.
+    </div>
+
+    <!-- Q1 -->
+    <div class="card">
+        <div class="question-text">1. Which of the following variables is best classified as ordinal data?</div>
+        <div class="options">
+            <label class="option-label"><input type="radio" name="mc1" value="A"> <span>A) A unique transaction ID number</span></label>
+            <label class="option-label"><input type="radio" name="mc1" value="B"> <span>B) Customer satisfaction rating (1 to 5 stars)</span></label>
+            <label class="option-label"><input type="radio" name="mc1" value="C"> <span>C) An employee's home department (Sales, IT, HR)</span></label>
+            <label class="option-label"><input type="radio" name="mc1" value="D"> <span>D) Exact corporate revenue measured in dollars</span></label>
+        </div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="card">
+        <div class="question-text">2. Which measure of central tendency is the most resistant to a single extreme outlier in your dataset?</div>
+        <div class="options">
+            <label class="option-label"><input type="radio" name="mc2" value="A"> <span>A) Arithmetic Mean</span></label>
+            <label class="option-label"><input type="radio" name="mc2" value="B"> <span>B) Median</span></label>
+            <label class="option-label"><input type="radio" name="mc2" value="C"> <span>C) Overall Range</span></label>
+            <label class="option-label"><input type="radio" name="mc2" value="D"> <span>D) Standard Deviation</span></label>
+        </div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="card">
+        <div class="question-text">3. In a significantly right-skewed salary distribution, what is the most likely relationship between the measures of center?</div>
+        <div class="options">
+            <label class="option-label"><input type="radio" name="mc3" value="A"> <span>A) Mean &lt; Median</span></label>
+            <label class="option-label"><input type="radio" name="mc3" value="B"> <span>B) Mean = Median</span></label>
+            <label class="option-label"><input type="radio" name="mc3" value="C"> <span>C) Mean &gt; Median</span></label>
+            <label class="option-label"><input type="radio" name="mc3" value="D"> <span>D) Mean = Mode</span></label>
+        </div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="card">
+        <div class="question-text">4. Holding everything else equal, what effect does significantly increasing the sample size have on the standard error of the mean?</div>
+        <div class="options">
+            <label class="option-label"><input type="radio" name="mc4" value="A"> <span>A) It generally increases the standard error</span></label>
+            <label class="option-label"><input type="radio" name="mc4" value="B"> <span>B) It generally decreases the standard error</span></label>
+            <label class="option-label"><input type="radio" name="mc4" value="C"> <span>C) It has absolutely no effect</span></label>
+            <label class="option-label"><input type="radio" name="mc4" value="D"> <span>D) It exactly doubles the standard error</span></label>
+        </div>
+    </div>
+
+    <!-- Q5 -->
+    <div class="card">
+        <div class="question-text">5. A z-score is calculated as +2.0. This means the specific observation is located exactly:</div>
+        <div class="options">
+            <label class="option-label"><input type="radio" name="mc5" value="A"> <span>A) Two numeric units above the median</span></label>
+            <label class="option-label"><input type="radio" name="mc5" value="B"> <span>B) Two standard deviations above the mean</span></label>
+            <label class="option-label"><input type="radio" name="mc5" value="C"> <span>C) Two standard errors above the average</span></label>
+            <label class="option-label"><input type="radio" name="mc5" value="D"> <span>D) Two times larger than the overall mean</span></label>
+        </div>
+    </div>
+
+    <!-- Q6 -->
+    <div class="card">
+        <div class="question-text">6. A hypothesis test yields a p-value of 0.01. Which is the most accurate statistical interpretation?</div>
+        <div class="options">
+            <label class="option-label"><input type="radio" name="mc6" value="A"> <span>A) The null hypothesis is completely false</span></label>
+            <label class="option-label"><input type="radio" name="mc6" value="B"> <span>B) A 1% chance to see data this extreme assuming the null is true</span></label>
+            <label class="option-label"><input type="radio" name="mc6" value="C"> <span>C) The alternative hypothesis is 99% true</span></label>
+            <label class="option-label"><input type="radio" name="mc6" value="D"> <span>D) The statistical model is purely unbiased</span></label>
+        </div>
+    </div>
+
+    <!-- Q7 -->
+    <div class="card">
+        <div class="question-text">7. A calculated correlation coefficient (r) of −0.92 between Variable X and Variable Y strongly implies:</div>
+        <div class="options">
+            <label class="option-label"><input type="radio" name="mc7" value="A"> <span>A) Variable X strictly causes Variable Y to decrease</span></label>
+            <label class="option-label"><input type="radio" name="mc7" value="B"> <span>B) There is no mathematical relationship between them</span></label>
+            <label class="option-label"><input type="radio" name="mc7" value="C"> <span>C) A strong negative linear relationship</span></label>
+            <label class="option-label"><input type="radio" name="mc7" value="D"> <span>D) A weak positive linear relationship</span></label>
+        </div>
+    </div>
+
+    <!-- Q8 -->
+    <div class="card">
+        <div class="question-text">8. In the context of a linear regression model, the R-squared (R²) metric is best interpreted as:</div>
+        <div class="options">
+            <label class="option-label"><input type="radio" name="mc8" value="A"> <span>A) The exact probability of statistical significance</span></label>
+            <label class="option-label"><input type="radio" name="mc8" value="B"> <span>B) The total percent of target variance explained by the model</span></label>
+            <label class="option-label"><input type="radio" name="mc8" value="C"> <span>C) The absolute correlation of the residual errors</span></label>
+            <label class="option-label"><input type="radio" name="mc8" value="D"> <span>D) The overall standard error of the sample mean</span></label>
+        </div>
+    </div>
+
+    <!-- Q9 -->
+    <div class="card">
+        <div class="question-text">9. In a standard Box & Whisker plot visualization, the horizontal line drawn inside the central box represents:</div>
+        <div class="options">
+            <label class="option-label"><input type="radio" name="mc9" value="A"> <span>A) The average of all data points</span></label>
+            <label class="option-label"><input type="radio" name="mc9" value="B"> <span>B) The exact middle data value (Median)</span></label>
+            <label class="option-label"><input type="radio" name="mc9" value="C"> <span>C) The most frequently seen value (Mode)</span></label>
+            <label class="option-label"><input type="radio" name="mc9" value="D"> <span>D) The lowest possible data point</span></label>
+        </div>
+    </div>
+
+    <!-- Q10 -->
+    <div class="card">
+        <div class="question-text">10. A student wants to see how profit changes if sales volume ranges from 1,000 to 5,000 units in increments of 500, while all other assumptions stay fixed. Which tool best fits that task?</div>
+        <div class="options">
+            <label class="option-label"><input type="radio" name="mc10" value="A"> <span>A) Goal Seek, because the student is working backward from profit to an input</span></label>
+            <label class="option-label"><input type="radio" name="mc10" value="B"> <span>B) Solver, because the student is evaluating more than one possible answer</span></label>
+            <label class="option-label"><input type="radio" name="mc10" value="C"> <span>C) Data Table, because the student wants a range of outputs for a sequence of input values</span></label>
+            <label class="option-label"><input type="radio" name="mc10" value="D"> <span>D) Goal Seek, because it can automatically build a full sensitivity grid</span></label>
+        </div>
+    </div>
+
+    <button class="btn btn-primary" onclick="showPage('excel-page')">Continue to Lab Style Test</button>
+</div>
+
+<!-- 3. EXCEL PRACTICAL SECTION -->
+<div id="excel-page" class="container hidden">
+    <div class="section-header">Part 2: Excel Analysis Lab (10 Points - 1 Pt Each)</div>
+    
+    <div class="card" style="background: #1e293b; color: white;">
+        <h2 style="margin-top:0">Data File</h2>
+        <p>Click below to download the dataset required for the practical portion. <br>Ensure you have the <strong>Data Analysis Toolpak</strong> and <strong>Solver</strong> add-ins enabled in Excel.</p>
+        <p style="font-size: 0.9em; color: #cbd5e1;"><em>Note: All currency amounts can be entered with or without commas/dollar signs (e.g. $363,170 or 363170 are both correct).</em></p>
+        <button class="btn btn-download" onclick="generateAndDownloadExcel()">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 5px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            Download midterm2_acct311_lab.xlsx
+        </button>
+    </div>
+
+    <form id="examForm" onsubmit="submitExam(event)">
+        <!-- Identity Hidden (Auto-filled) -->
+        <input type="hidden" id="student_name" name="student_name">
+        <input type="hidden" id="student_email" name="student_email">
+        
+        <!-- HIDDEN MC ANSWERS FOR SUBMISSION -->
+        <input type="hidden" id="hidden_mc1" name="mc1">
+        <input type="hidden" id="hidden_mc2" name="mc2">
+        <input type="hidden" id="hidden_mc3" name="mc3">
+        <input type="hidden" id="hidden_mc4" name="mc4">
+        <input type="hidden" id="hidden_mc5" name="mc5">
+        <input type="hidden" id="hidden_mc6" name="mc6">
+        <input type="hidden" id="hidden_mc7" name="mc7">
+        <input type="hidden" id="hidden_mc8" name="mc8">
+        <input type="hidden" id="hidden_mc9" name="mc9">
+        <input type="hidden" id="hidden_mc10" name="mc10">
+
+        <!-- TOPIC 1 -->
+        <div class="card">
+            <div class="section-header" style="font-size:1.2rem; margin-bottom:15px;">Topic 1: Scenario Planning (Budget Inflation)</div>
+            <div class="task-instruction">
+                <strong>Task:</strong> Navigate to the <strong>'Scenario_Manager'</strong> tab. Set up scenario models for the department's budget next year based on varying inflation rates.<br><br>
+                <em>Note: Construct the formulas for Projected Costs (Salaries, Rent, Utilities, Supplies) and Total Costs first! Formula: Current Year * (1 + Inflation Rate)</em><br><br>
+                Create 3 Scenarios changing the four Inflation rate cells:<br>
+                • <strong>Low Inflation:</strong> Salaries 3%, Rent 2%, Util 4%, Supplies 3%<br>
+                • <strong>Moderate Inflation:</strong> Salaries 5%, Rent 4%, Util 8%, Supplies 6%<br>
+                • <strong>High Inflation:</strong> Salaries 7%, Rent 6%, Util 12%, Supplies 10%<br><br>
+                Generate a Scenario Summary report displaying the <strong>Total Costs</strong> as the result cell.
+            </div>
+            
+            <label class="lab-question-label"><span class="q-badge">Question 11</span> What is the Total Projected Cost under the <strong>Low Inflation</strong> scenario?</label>
+            <input type="text" id="ans_q11" name="ans_q11" required placeholder="e.g. 3000">
+
+            <label class="lab-question-label"><span class="q-badge">Question 12</span> What is the Total Projected Cost under the <strong>Moderate Inflation</strong> scenario?</label>
+            <input type="text" id="ans_q12" name="ans_q12" required placeholder="e.g. 3000">
+
+            <label class="lab-question-label"><span class="q-badge">Question 13</span> What is the Total Projected Cost under the <strong>High Inflation</strong> scenario?</label>
+            <input type="text" id="ans_q13" name="ans_q13" required placeholder="e.g. 3000">
+        </div>
+
+        <!-- TOPIC 2 -->
+        <div class="card">
+            <div class="section-header" style="font-size:1.2rem; margin-bottom:15px;">Topic 2: Multiple Regression Analysis</div>
+            <div class="task-instruction">
+                <strong>Task:</strong> Navigate to the <strong>'Maintenance_Data'</strong> tab. This dataset tracks the age of various machines (in months), their recent maintenance quality score (1-10), and their annual maintenance costs.<br><br>
+                1. Navigate to <em>Data > Data Analysis > Regression</em>.<br>
+                2. You want to <strong>predict</strong> Maintenance Cost based on Machine Age AND Maintenance Quality Score (Multiple Regression). Select the appropriate ranges for your variables.<br>
+                3. Generate the summary output on your current sheet or a new one to answer the following.
+            </div>
+            
+            <label class="lab-question-label"><span class="q-badge">Question 14</span> What is the dependent variable in this model?</label>
+            <div style="margin-top: 8px; margin-bottom: 8px; line-height: 1.8; font-size: 0.95em;">
+                A. Machine_Age_Months<br>
+                B. Recent_Maintenance_Quality_Score<br>
+                C. Maintenance_Cost
+            </div>
+            <select id="ans_q14" name="ans_q14" required>
+                <option value="">Select an option...</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+            </select>
+
+            <label class="lab-question-label"><span class="q-badge">Question 15</span> Using the regression equation, what is the predicted maintenance cost for a machine that is 40 months old with a maintenance quality score of 8?</label>
+            <div style="margin-top: 8px; margin-bottom: 8px; line-height: 1.8; font-size: 0.95em;">
+                A. $2,460.12<br>
+                B. $2,846.45<br>
+                C. $3,232.81<br>
+                D. $3,619.17
+            </div>
+            <select id="ans_q15" name="ans_q15" required>
+                <option value="">Select an option...</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+                <option value="D">D</option>
+            </select>
+
+            <label class="lab-question-label"><span class="q-badge">Question 16</span> Which is the best interpretation of the coefficient on Recent_Maintenance_Quality_Score?</label>
+            <div style="margin-top: 8px; margin-bottom: 8px; line-height: 1.8; font-size: 0.95em;">
+                A. A 1-point increase in maintenance quality raises maintenance cost by about $96.59, holding age constant<br>
+                B. A 1-point increase in maintenance quality lowers maintenance cost by about $96.59, holding age constant<br>
+                C. A 1-point increase in maintenance quality lowers machine age by about 96.59 months<br>
+                D. A 1-point increase in maintenance quality lowers total maintenance cost by 96.59%
+            </div>
+            <select id="ans_q16" name="ans_q16" required>
+                <option value="">Select an option...</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+                <option value="D">D</option>
+            </select>
+        </div>
+
+        <!-- TOPIC 3 -->
+        <div class="card">
+            <div class="section-header" style="font-size:1.2rem; margin-bottom:15px;">Topic 3: Optimization (Advertising Budget)</div>
+            
+            <div class="task-instruction">
+                <strong>Task:</strong> Navigate to the <strong>'Solver_Model'</strong> tab. Determine the optimal allocation of a $10,000 budget across three advertising channels.<br><br>
+                1. <strong>Objective:</strong> Maximize Total Expected Return.<br>
+                2. <strong>Changing Cells:</strong> Budget Allocation ($) for Social Media, Email, and Search Ads.<br>
+                3. <strong>Constraints:</strong> 
+                <br>&nbsp;&nbsp;&bull; Total Spent (Sum of allocations) &lt;= Total Budget Limit ($10,000)
+                <br>&nbsp;&nbsp;&bull; Social Media Allocation &gt;= Min Social Media ($2,000)
+                <br>&nbsp;&nbsp;&bull; Email Allocation &lt;= Max Email ($4,000)
+                <br>&nbsp;&nbsp;&bull; Search Ads Allocation &gt;= Min Search Ads ($2,000)<br><br>
+                <strong>Crucial:</strong> You must generate an <strong>Answer Report</strong> after running your Solver model!
+            </div>
+            
+            <label class="lab-question-label"><span class="q-badge">Question 17</span> In the optimal solution, how much budget is allocated to <strong>Social Media</strong>?</label>
+            <input type="text" id="ans_q17" name="ans_q17" required placeholder="e.g. 3000">
+
+            <label class="lab-question-label"><span class="q-badge">Question 18</span> In the optimal solution, how much budget is allocated to <strong>Email Campaigns</strong>?</label>
+            <input type="text" id="ans_q18" name="ans_q18" required placeholder="e.g. 3000">
+
+            <label class="lab-question-label"><span class="q-badge">Question 19</span> In the optimal solution, how much budget is allocated to <strong>Search Ads</strong>?</label>
+            <input type="text" id="ans_q19" name="ans_q19" required placeholder="e.g. 3000">
+
+            <label class="lab-question-label"><span class="q-badge">Question 20</span> Based on the Solver report, which constraint is binding at the optimal solution?</label>
+            <div style="margin-top: 8px; margin-bottom: 8px; line-height: 1.8; font-size: 0.95em;">
+                A. The Email Campaign maximum constraint, because its final value is $0<br>
+                B. The Search Ads minimum constraint, because Search Ads received the largest allocation<br>
+                C. The budget allocation to Social Media is binding because the full $2,000 is used up<br>
+                D. The Email Campaign maximum constraint, because its slack is 4,000
+            </div>
+            <select id="ans_q20" name="ans_q20" required>
+                <option value="">Select an option...</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+                <option value="D">D</option>
+            </select>
+        </div>
+
+        <div style="display:flex; justify-content: space-between; align-items: center; margin-top:20px;">
+            <button type="button" class="btn" style="background:#64748b; color:white;" onclick="showPage('mc-page')">Back to Multiple Choice</button>
+            <button type="submit" id="submitBtn" class="btn btn-primary">Submit Exam & View Score</button>
+        </div>
+        <div id="submitMsg" style="margin-top:10px; text-align:center; font-weight:bold;"></div>
+    </form>
+</div>
+
+<!-- 4. RESULTS PAGE -->
+<div id="results-page" class="container hidden">
+    <div class="card">
+        <h1 style="color: var(--zag-blue); text-align: center;">Submission Received</h1>
+        
+        <div class="warning-box" style="text-align:center; font-size:1.2rem; margin: 20px 0;">
+            <div style="margin-bottom: 5px;">⚠️ <strong>Don't forget!</strong></div>
+            Please upload your Excel file (with your Answer Reports & Scenarios included) to CANVAS.<br>
+            Without it, you will receive NO CREDIT.
+        </div>
+
+        <h3 style="text-align: center; color: #666;" id="finalScoreDisplay"></h3>
+        
+        <div id="student-summary" style="text-align: center; margin-bottom: 20px; color: #666;"></div>
+
+        <h3>Part 1: Multiple Choice Results</h3>
+        <table class="results-table">
+            <thead><tr><th>Q</th><th>Your Answer</th><th>Status</th></tr></thead>
+            <tbody id="mc-results-body"></tbody>
+        </table>
+
+        <h3 style="margin-top: 30px;">Part 2: Excel Practical Results</h3>
+        <table class="results-table">
+            <thead><tr><th>Q</th><th>Your Answer</th><th>Status</th></tr></thead>
+            <tbody id="excel-results-body"></tbody>
+        </table>
+
+        <div class="task-instruction" style="margin-top: 25px; background-color: #f0fdf4; border-color: #22c55e;">
+             <strong>Student Record:</strong> Please download your answers below. Keep this file as proof of your submission. <br>
+             (Correct answers will be revealed in the downloaded file)
+        </div>
+        
+        <button onclick="downloadStudentAnswers()" class="btn" style="background:#16a34a; color:white; width:100%; text-align:center;">
+            Download Your Answers (For your own record)
+        </button>
+        
+        <button class="btn btn-red" onclick="exitExam()" style="margin-top: 20px; width: 100%;">Exit Exam</button>
+    </div>
+</div>
+
+<!-- LOGIC SCRIPTS -->
+<script>
+    // --- SECURITY PROTOCOLS ---
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('keydown', e => {
+        if (e.keyCode === 123 || 
+           (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) ||
+           (e.ctrlKey && e.keyCode === 85)) {
+            e.preventDefault();
+            return false;
+        }
+    });
+
+    // --- STATE MANAGEMENT ---
+    const pages = ['landing-page', 'mc-page', 'excel-page', 'results-page'];
+    let studentInfo = { name: "", email: "" };
+    let mcScore = 0;
+    let excelScore = 0;
+    let mcAnswers = {};
+    
+    // Updated Google Script URL
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyw5xU9ohAK8E9slxTJRmnyNV8xjCnsTmMHZIMXrEMwp6zKMUokSHSV2kqahUDbSYCbXw/exec"; 
+
+    // --- OBFUSCATED ANSWER KEYS ---
+    const _mChunks = [
+        "eyJtYzEiOiJCIiwibWMyIjoiQiIsIm1jMyI6",
+        "IkMiLCJtYzQiOiJCIiwibWM1IjoiQiIsIm1j",
+        "NiI6IkIiLCJtYzciOiJDIiwibWM4IjoiQiIs",
+        "Im1jOSI6IkIiLCJtYzEwIjoiQyJ9"
+    ];
+    
+    // Decoding: {"ans_q11":"363170","ans_q12":"370840","ans_q13":"378760","ans_q14":"C","ans_q15":"B","ans_q16":"B","ans_q17":"2000","ans_q18":"0","ans_q19":"8000","ans_q20":"C"}
+    const _pChunks = [
+        "eyJhbnNfcTExIjoiMzYzMTcwIiwiYW5zX3Ex",
+        "MiI6IjM3MDg0MCIsImFuc19xMTMiOiIzNzg3",
+        "NjAiLCJhbnNfcTE0IjoiQyIsImFuc19xMTUi",
+        "OiJCIiwiYW5zX3ExNiI6IkIiLCJhbnNfcTE3",
+        "IjoiMjAwMCIsImFuc19xMTgiOiIwIiwiYW5z",
+        "X3ExOSI6IjgwMDAiLCJhbnNfcTIwIjoiQyJ9"
+    ];
+
+    function showPage(pageId) {
+        pages.forEach(p => document.getElementById(p).classList.add('hidden'));
+        document.getElementById(pageId).classList.remove('hidden');
+        window.scrollTo(0,0);
+    }
+
+    // --- STEP 1: START EXAM ---
+    function startExam() {
+        const name = document.getElementById('landing_name').value.trim();
+        const email = document.getElementById('landing_email').value.trim();
+        if (!name || !email) {
+            document.getElementById('landing-error').style.display = 'block';
+            return;
+        }
+        studentInfo.name = name;
+        studentInfo.email = email;
+        document.getElementById('student_name').value = name;
+        document.getElementById('student_email').value = email;
+
+        showPage('mc-page');
+    }
+
+    // --- STEP 2: MC LOGIC ---
+    function collectMC() {
+        for (let i = 1; i <= 10; i++) {
+            const key = "mc" + i;
+            const selected = document.querySelector(`input[name="${key}"]:checked`);
+            const val = selected ? selected.value : "Skipped";
+            mcAnswers[key] = val;
+            const hiddenInput = document.getElementById('hidden_' + key);
+            if(hiddenInput) hiddenInput.value = val;
+        }
+    }
+
+    // --- STEP 3: STYLED EXCEL GENERATION ---
+    function generateAndDownloadExcel() {
+        const wb = XLSX.utils.book_new();
+
+        // Styles Configuration
+        const styles = {
+            header: {
+                font: { bold: true, color: { rgb: "FFFFFF" }, name: "Calibri", sz: 12 },
+                fill: { fgColor: { rgb: "0D9488" } },
+                alignment: { horizontal: "center", vertical: "center" },
+                border: { bottom: {style:"thin", color: {rgb:"000000"}} }
+            },
+            subHeader: {
+                font: { bold: true, name: "Calibri", sz: 11 },
+                fill: { fgColor: { rgb: "F1F5F9" } },
+                border: { bottom: {style:"thin", color: {rgb:"CBD5E1"}} }
+            },
+            title: { font: { bold: true, sz: 14, color: { rgb: "0F766E" }, name: "Calibri" } },
+            input: {
+                fill: { fgColor: { rgb: "FEF08A" } },
+                border: { top: {style:"thin", color:{rgb:"BFBFBF"}}, bottom: {style:"thin", color:{rgb:"BFBFBF"}}, left: {style:"thin", color:{rgb:"BFBFBF"}}, right: {style:"thin", color:{rgb:"BFBFBF"}} }
+            },
+            objective: {
+                fill: { fgColor: { rgb: "DCFCE7" } },
+                font: { bold: true, color: { rgb: "166534" } },
+                border: { top: {style:"thin", color:{rgb:"BFBFBF"}}, bottom: {style:"thin", color:{rgb:"BFBFBF"}}, left: {style:"thin", color:{rgb:"BFBFBF"}}, right: {style:"thin", color:{rgb:"BFBFBF"}} }
+            },
+            constraint: {
+                fill: { fgColor: { rgb: "FFEDD5" } },
+                font: { bold: true, color: { rgb: "9A3412" } },
+                border: { top: {style:"thin", color:{rgb:"BFBFBF"}}, bottom: {style:"thin", color:{rgb:"BFBFBF"}}, left: {style:"thin", color:{rgb:"BFBFBF"}}, right: {style:"thin", color:{rgb:"BFBFBF"}} }
+            },
+            blankCompute: {
+                fill: { fgColor: { rgb: "F3F4F6" } },
+                border: { top: {style:"thin", color:{rgb:"EF4444"}}, bottom: {style:"thin", color:{rgb:"EF4444"}}, left: {style:"thin", color:{rgb:"EF4444"}}, right: {style:"thin", color:{rgb:"EF4444"}} }
+            }
+        };
+
+        const applyStyle = (ws, range, styleName) => {
+            if(!ws['!ref']) return;
+            const rangeObj = XLSX.utils.decode_range(range);
+            for (let R = rangeObj.s.r; R <= rangeObj.e.r; ++R) {
+                for (let C = rangeObj.s.c; C <= rangeObj.e.c; ++C) {
+                    const cell_address = XLSX.utils.encode_cell({r:R, c:C});
+                    if (!ws[cell_address]) continue;
+                    if (!ws[cell_address].s) ws[cell_address].s = {};
+                    Object.assign(ws[cell_address].s, styles[styleName]);
+                }
+            }
+        };
+
+        const setCols = (ws, widths) => {
+            ws['!cols'] = widths.map(w => ({wch: w}));
+        };
+
+        // 1. Scenario Manager Sheet
+        let scenarioData = [
+            ["Department Budget Forecast Under Inflation"],
+            [],
+            ["Inflation_Assumptions", "Rates"],
+            ["Salaries_Increase", 0.03],
+            ["Rent_Increase", 0.02],
+            ["Utilities_Increase", 0.04],
+            ["Supplies_Increase", 0.03],
+            [],
+            ["Cost_Item", "Current_Year", "Projected_Next_Year"],
+            ["Salaries", 250000, ""],
+            ["Rent", 60000, ""],
+            ["Utilities", 18000, ""],
+            ["Supplies", 25000, ""],
+            [],
+            ["Total_Costs", 353000, ""]
+        ];
+        const wsScenario = XLSX.utils.aoa_to_sheet(scenarioData);
+        if(wsScenario['A1']) wsScenario['A1'].s = styles.title;
+        applyStyle(wsScenario, "A3:B3", "header");
+        applyStyle(wsScenario, "A9:C9", "header");
+        applyStyle(wsScenario, "B4:B7", "input");
+        applyStyle(wsScenario, "C10:C13", "blankCompute");
+        applyStyle(wsScenario, "C15", "blankCompute");
+        ["B4", "B5", "B6", "B7"].forEach(c => { if(wsScenario[c]) wsScenario[c].z = "0.0%"; });
+        ["B10", "B11", "B12", "B13", "B15"].forEach(c => { if(wsScenario[c]) wsScenario[c].z = "$#,##0"; });
+        setCols(wsScenario, [25, 20, 25]);
+        XLSX.utils.book_append_sheet(wb, wsScenario, "Scenario_Manager");
+        
+        // 2. Regression Data Sheet (Multiple Regression)
+        let regData = [
+            ["Equipment Maintenance Records"],
+            [],
+            ["Machine_ID", "Machine_Age_Months", "Recent_Maintenance_Quality_Score", "Maintenance_Cost"],
+        ];
+        
+        const regDataRaw = [
+            ["M_100", 12, 9, 1710],
+            ["M_101", 24, 8, 2330],
+            ["M_102", 36, 6, 2875],
+            ["M_103", 48, 5, 3360],
+            ["M_104", 60, 4, 4015],
+            ["M_105", 18, 8, 2140],
+            ["M_106", 30, 7, 2545],
+            ["M_107", 42, 5, 3190],
+            ["M_108", 54, 3, 3875],
+            ["M_109", 15, 9, 1825],
+            ["M_110", 21, 7, 2260],
+            ["M_111", 33, 6, 2715],
+            ["M_112", 45, 4, 3410],
+            ["M_113", 57, 3, 3960],
+            ["M_114", 10, 10, 1585],
+            ["M_115", 20, 8, 2080],
+            ["M_116", 40, 6, 2980],
+            ["M_117", 50, 5, 3525],
+            ["M_118", 60, 2, 4175],
+            ["M_119", 30, 9, 2385]
+        ];
+
+        regData = regData.concat(regDataRaw);
+
+        const wsReg = XLSX.utils.aoa_to_sheet(regData);
+        if(wsReg['A1']) wsReg['A1'].s = styles.title;
+        applyStyle(wsReg, "A3:D3", "header");
+        for (let i = 4; i <= 23; i++) {
+            if(wsReg['D'+i]) wsReg['D'+i].z = "$#,##0";
+        }
+        setCols(wsReg, [15, 22, 35, 22]);
+        XLSX.utils.book_append_sheet(wb, wsReg, "Maintenance_Data");
+
+        // 3. Solver Model Sheet
+        let solverData = [
+            ["Advertising Budget Allocation (Solver)"],
+            [],
+            ["Platform", "Social_Media", "Email_Campaign", "Search_Ads", "Total_Limits"],
+            ["Expected_Return", 4, 3, 5, ""],
+            [],
+            ["Decision_Variables:"],
+            ["Budget_Allocation", 0, 0, 0, ""],
+            [],
+            ["Constraints:", "", "", "", ""],
+            ["Total_Spent", "", "", "", ""], 
+            ["Total_Budget_Limit", "", "", "", 10000],
+            ["Min_Social_Media", 2000, "", "", ""],
+            ["Max_Email", "", 4000, "", ""],
+            ["Min_Search_Ads", "", "", 2000, ""],
+            [],
+            ["Objective:"],
+            ["Total_Expected_Return", "", "", "", ""] 
+        ];
+        const wsSolver = XLSX.utils.aoa_to_sheet(solverData);
+        if(wsSolver['A1']) wsSolver['A1'].s = styles.title;
+        applyStyle(wsSolver, "A3:E3", "header");
+        applyStyle(wsSolver, "B7:D7", "input");
+        applyStyle(wsSolver, "E10", "blankCompute");
+        applyStyle(wsSolver, "E11", "constraint");
+        applyStyle(wsSolver, "B12", "constraint");
+        applyStyle(wsSolver, "C13", "constraint");
+        applyStyle(wsSolver, "D14", "constraint");
+        applyStyle(wsSolver, "E17", "blankCompute");
+        ["B4","C4","D4","B7","C7","D7","E10","E11","B12","C13","D14","E17"].forEach(c => { if(wsSolver[c]) wsSolver[c].z = "$#,##0"; });
+        setCols(wsSolver, [25, 18, 18, 18, 18]);
+        XLSX.utils.book_append_sheet(wb, wsSolver, "Solver_Model");
+
+        XLSX.writeFile(wb, "midterm2_acct311_lab.xlsx");
+    }
+
+    // --- STEP 4: SUBMISSION & GRADING ---
+    function submitExam(e) {
+        e.preventDefault();
+        
+        collectMC();
+
+        const form = document.getElementById('examForm');
+        const submitMsg = document.getElementById('submitMsg');
+        
+        submitMsg.innerHTML = "Grading & Submitting...";
+
+        try {
+            // Decode keys dynamically
+            const key = JSON.parse(atob(_pChunks.join('')));
+            const mcKeyDecoded = JSON.parse(atob(_mChunks.join('')));
+
+            let pScore = 0;
+            let excelResultsHTML = "";
+            const questionMap = { 
+                'ans_q11': 'Q11', 'ans_q12': 'Q12', 'ans_q13': 'Q13', 'ans_q14': 'Q14', 'ans_q15': 'Q15', 
+                'ans_q16': 'Q16', 'ans_q17': 'Q17', 'ans_q18': 'Q18', 'ans_q19': 'Q19', 'ans_q20': 'Q20' 
+            };
+            
+            window.examResultData = { mc: {}, practical: {} };
+            const data = {};
+
+            for (let id in questionMap) {
+                const label = questionMap[id];
+                const correctVal = key[id];
+                let userVal = document.getElementById(id).value || "-";
+                
+                // Aggressively clean input: Remove spaces, dollars, commas, quotes
+                const rawUser = String(userVal).trim().toLowerCase().replace(/[,\$\s"]/g, '');
+                const rawKey = String(correctVal).trim().toLowerCase().replace(/[,\$\s"]/g, '');
+                
+                let isMatch = false;
+
+                if (rawUser === rawKey) {
+                    isMatch = true;
+                } else {
+                     let u = parseFloat(rawUser);
+                     let k = parseFloat(rawKey);
+                     if (!isNaN(u) && !isNaN(k) && Math.abs(u - k) < 0.1) isMatch = true;
+                }
+
+                if (isMatch) pScore += 1; // 1 point each for lab style
+                
+                data[label + '_Status'] = isMatch ? "Correct" : "Incorrect";
+
+                window.examResultData.practical[id] = { 
+                    q: label, 
+                    user: userVal,
+                    correct: correctVal,
+                    status: isMatch ? "Correct" : "Incorrect" 
+                };
+
+                excelResultsHTML += `<tr><td>${label}</td><td>${userVal}</td><td class="${isMatch?'match':'mismatch'}">${isMatch?'✅ Correct':'❌ Incorrect'}</td></tr>`;
+            }
+            excelScore = pScore;
+
+            let mcResultsHTML = "";
+            let mScore = 0;
+            for (let i = 1; i <= 10; i++) {
+                const qKey = "mc" + i;
+                const uAns = mcAnswers[qKey] || "-";
+                const cAns = mcKeyDecoded[qKey];
+                const isCorrect = uAns === cAns;
+                
+                if (isCorrect) mScore += 1.5; // 1.5 points each for MC
+                
+                data['MC' + i + '_Status'] = isCorrect ? "Correct" : "Incorrect";
+
+                window.examResultData.mc[qKey] = {
+                    q: "Q" + i,
+                    user: uAns,
+                    correct: cAns,
+                    status: isCorrect ? "Correct" : "Incorrect"
+                };
+
+                mcResultsHTML += `<tr><td>Q${i}</td><td>${uAns}</td><td class="${isCorrect?'match':'mismatch'}">${isCorrect?'✅ Correct':'❌ Incorrect'}</td></tr>`;
+            }
+            mcScore = mScore;
+
+            const totalCalcScore = excelScore + mcScore;
+
+            // Immediately update the DOM to prevent 'hanging' feeling
+            document.getElementById('mc-results-body').innerHTML = mcResultsHTML;
+            document.getElementById('excel-results-body').innerHTML = excelResultsHTML;
+            document.getElementById('finalScoreDisplay').innerHTML = `Total Score: ${totalCalcScore} / 25`;
+            document.getElementById('student-summary').innerText = `Student: ${studentInfo.name} (${studentInfo.email})`;
+            showPage('results-page');
+
+            // Defer fetch so it doesn't block UI transition
+            setTimeout(() => {
+                const formData = new FormData(form);
+                formData.forEach((value, key) => data[key] = value);
+                data['Total_Score'] = totalCalcScore;
+                
+                if(GOOGLE_SCRIPT_URL) {
+                    fetch(GOOGLE_SCRIPT_URL, {
+                        method: 'POST',
+                        mode: 'no-cors', 
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(data)
+                    }).then(() => {
+                        console.log("Data sent to Google Sheet");
+                    }).catch(err => console.error("Error submitting", err));
+                }
+            }, 100);
+
+        } catch (err) {
+            console.error("Evaluation Error: ", err);
+            alert("An error occurred during grading. Please download your answers and submit manually.");
+        }
+    }
+
+    function downloadStudentAnswers() {
+        if (!window.examResultData) {
+            alert("Error: Results not found. Please submit first.");
+            return;
+        }
+
+        let content = "ACCT 311 - MIDTERM 2 - DETAILED RESULT RECORD\n";
+        content += "==============================================\n";
+        content += `Student: ${studentInfo.name}\n`;
+        content += `Email:   ${studentInfo.email}\n`;
+        content += `Date:    ${new Date().toLocaleString()}\n`;
+        content += "==============================================\n\n";
+        
+        content += "PART 1: MULTIPLE CHOICE (1.5 pts each)\n";
+        content += "----------------------------------------------\n";
+        for (let i = 1; i <= 10; i++) {
+            const k = "mc" + i;
+            const r = window.examResultData.mc[k];
+            if(r) {
+                content += `${r.q}: You answered [${r.user}] | Correct: [${r.correct}] -> ${r.status}\n`;
+            }
+        }
+        
+        content += "\nPART 2: EXCEL PRACTICAL (1 pt each)\n";
+        content += "----------------------------------------------\n";
+        const questionMap = ['ans_q11', 'ans_q12', 'ans_q13', 'ans_q14', 'ans_q15', 'ans_q16', 'ans_q17', 'ans_q18', 'ans_q19', 'ans_q20'];
+        
+        questionMap.forEach(id => {
+            const r = window.examResultData.practical[id];
+            if(r) {
+                 content += `${r.q}: You answered [${r.user}] | Correct: [${r.correct}] -> ${r.status}\n`;
+            }
+        });
+
+        content += "\n==============================================\n";
+        content += "Keep this file for your records.\n";
+
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${studentInfo.name.replace(/\s+/g,'_')}_Midterm2_Answers.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+
+    function exitExam() {
+        if(confirm("Are you sure you want to exit? Ensure you have saved your answer record.")) {
+            window.close();
+            document.body.innerHTML = "<div style='display:flex; justify-content:center; align-items:center; height:100vh; background:#000; color:white; flex-direction:column;'><h1>Exam Ended</h1><p>You may now close this tab.</p></div>";
+        }
+    }
+
+    window.onbeforeunload = function() { return "Data will be lost if you leave the page, are you sure?"; };
+
+</script>
+</body>
+</html>
